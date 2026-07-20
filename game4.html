@@ -26,6 +26,14 @@
       --shadow: rgba(20, 40, 34, 0.18);
       --focus: rgba(38, 95, 189, 0.34);
       --radius: 8px;
+      --shell-gap: clamp(7px, 1.25vh, 12px);
+      --panel-pad: clamp(7px, 1.25vh, 12px);
+      --panel-gap: clamp(5px, 0.95vh, 10px);
+      --button-gap: clamp(4px, 0.66vh, 7px);
+      --deploy-size: clamp(44px, 6vh, 72px);
+      --tool-width: clamp(40px, 5.2vh, 52px);
+      --number-row-height: clamp(30px, 4.6vh, 50px);
+      --special-row-height: clamp(34px, 5vh, 56px);
       font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
     }
 
@@ -46,11 +54,30 @@
     body {
       display: flex;
       justify-content: center;
-      padding: 20px;
+      padding: clamp(8px, 2vh, 20px);
     }
 
     button {
       font: inherit;
+    }
+
+    .icon-sprite {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .person-icon {
+      display: block;
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      overflow: visible;
     }
 
     .page-links {
@@ -92,10 +119,13 @@
 
     .game-shell {
       width: min(1280px, 100%);
-      min-height: calc(100vh - 40px);
+      min-height: calc(100vh - (clamp(8px, 2vh, 20px) * 2));
+      min-height: calc(100dvh - (clamp(8px, 2vh, 20px) * 2));
+      height: calc(100vh - (clamp(8px, 2vh, 20px) * 2));
+      height: calc(100dvh - (clamp(8px, 2vh, 20px) * 2));
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 12px;
+      gap: var(--shell-gap);
     }
 
     .app-header,
@@ -212,6 +242,15 @@
       transition: transform 140ms ease, background 140ms ease;
     }
 
+    .battlefield .coin-badge {
+      position: absolute;
+      z-index: 16;
+      top: 12px;
+      right: 12px;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+      pointer-events: none;
+    }
+
     .badge.coin-badge.is-pulsing {
       background: var(--gold);
       transform: translateY(2px) scale(1.04);
@@ -221,15 +260,16 @@
       min-height: 0;
       display: grid;
       grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
-      gap: 12px;
+      gap: var(--shell-gap);
     }
 
     .battle-shell {
       min-width: 0;
-      padding: 12px;
+      min-height: 0;
+      padding: var(--panel-pad);
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 12px;
+      gap: var(--shell-gap);
     }
 
     .battle-header {
@@ -322,10 +362,92 @@
       margin-top: 6px;
     }
 
+    .target-hud {
+      position: absolute;
+      z-index: 15;
+      left: 59%;
+      top: 14px;
+      width: min(246px, 38%);
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 9px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.94);
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+      transform: translateX(-50%);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .target-hud.is-empty {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-4px) scale(0.96);
+    }
+
+    .target-hud-label {
+      grid-column: 1 / -1;
+      color: var(--soft-ink);
+      font-size: 0.68rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .target-hud-number {
+      min-width: 30px;
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background: #fff3b7;
+      font-size: 1.2rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .target-hud-pattern-shell {
+      min-width: 70px;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .target-pattern {
+      --dot-size: 6px;
+      gap: 2px;
+      padding: 3px 4px;
+      border: 2px solid rgba(45, 70, 64, 0.64);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .target-hud-progress {
+      min-width: 34px;
+      justify-self: end;
+      padding: 2px 5px;
+      border: 2px solid rgba(45, 70, 64, 0.56);
+      border-radius: 7px;
+      background: var(--mint);
+      color: var(--green-deep);
+      font-size: 0.72rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .target-hud-progress:empty {
+      display: none;
+    }
+
     .battlefield {
       --wall-x: 18%;
       position: relative;
-      min-height: 480px;
+      min-height: clamp(320px, calc(100dvh - 294px), 480px);
       border: 3px solid var(--line);
       border-radius: var(--radius);
       overflow: hidden;
@@ -437,19 +559,165 @@
       border: 3px solid var(--line);
       border-bottom: 0;
       border-radius: 40px 40px 0 0;
+      overflow: hidden;
       background:
-        repeating-linear-gradient(90deg, #68452d 0 18px, #5a3926 18px 22px);
+        radial-gradient(circle at 50% 72%, rgba(240, 195, 78, 0.38) 0 15%, transparent 36%),
+        #24342f;
       transform: translateX(-50%);
+      box-shadow:
+        inset 0 10px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -12px 0 rgba(0, 0, 0, 0.18);
+      transform-origin: 50% 100%;
+      transition: box-shadow 220ms ease;
+      z-index: 2;
+    }
+
+    .castle-gate::before,
+    .castle-gate::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: -2px;
+      z-index: 2;
+      width: 54%;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 12%, transparent 12% 88%, rgba(0, 0, 0, 0.16) 88%),
+        repeating-linear-gradient(90deg, #6f4a30 0 16px, #553623 16px 21px);
       box-shadow: inset 0 10px 0 rgba(255, 255, 255, 0.08);
+      transition: transform 520ms cubic-bezier(0.2, 0.82, 0.12, 1);
+    }
+
+    .castle-gate::before {
+      left: 0;
+      border-right: 3px solid rgba(38, 31, 24, 0.7);
+      transform-origin: left center;
+    }
+
+    .castle-gate::after {
+      right: 0;
+      border-left: 3px solid rgba(38, 31, 24, 0.7);
+      transform-origin: right center;
+    }
+
+    .castle-wall.is-treasure-countdown .castle-gate {
+      animation: gateRattle 520ms ease-in-out infinite;
+      box-shadow:
+        inset 0 10px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -12px 0 rgba(0, 0, 0, 0.18),
+        0 0 0 4px rgba(240, 195, 78, 0.16);
+    }
+
+    .castle-wall.is-treasure-open .castle-gate::before {
+      transform: translateX(-70%) rotate(-7deg) skewY(4deg);
+    }
+
+    .castle-wall.is-treasure-open .castle-gate::after {
+      transform: translateX(70%) rotate(7deg) skewY(-4deg);
+    }
+
+    .treasure-countdown {
+      position: absolute;
+      z-index: 5;
+      left: 50%;
+      top: 46%;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: var(--gold);
+      color: #2f2a21;
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.66);
+      box-shadow:
+        inset 0 -5px 0 rgba(0, 0, 0, 0.16),
+        0 5px 0 rgba(0, 0, 0, 0.14);
+      pointer-events: none;
+    }
+
+    .castle-wall.is-treasure-countdown .treasure-countdown {
+      opacity: 1;
+      animation: treasureCountdownPulse 1000ms ease-in-out infinite;
+    }
+
+    .treasure-chest {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      z-index: 4;
+      width: min(58px, 52%);
+      height: 46px;
+      display: block;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(14px) scale(0.78);
+      transition: opacity 180ms ease, transform 260ms ease;
+    }
+
+    .castle-wall.is-treasure-open .treasure-chest {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0) scale(1);
+      animation: treasurePeek 1200ms ease-in-out infinite;
+    }
+
+    .treasure-chest:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+
+    .treasure-chest::before,
+    .treasure-chest::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      border: 3px solid var(--line);
+      transform: translateX(-50%);
+    }
+
+    .treasure-chest::before {
+      bottom: 19px;
+      width: 50px;
+      height: 24px;
+      border-radius: 23px 23px 7px 7px;
+      background:
+        linear-gradient(90deg, transparent 0 42%, rgba(255, 255, 255, 0.42) 42% 58%, transparent 58%),
+        linear-gradient(#d99145 0 52%, #9f5b35 53%);
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.16);
+    }
+
+    .treasure-chest::after {
+      bottom: 0;
+      width: 54px;
+      height: 26px;
+      border-radius: 6px;
+      background:
+        linear-gradient(90deg, transparent 0 42%, var(--gold) 42% 58%, transparent 58%),
+        linear-gradient(#b96d3f 0 50%, #7a432c 51%);
+      box-shadow:
+        inset 0 7px 0 rgba(255, 255, 255, 0.14),
+        inset 0 -7px 0 rgba(0, 0, 0, 0.18),
+        0 5px 0 rgba(0, 0, 0, 0.16);
     }
 
     .soldier {
       position: absolute;
       z-index: 8;
       left: 52%;
-      width: 38px;
-      height: 48px;
+      width: 46px;
+      height: 56px;
       transform: translateX(-50%);
+      color: var(--line);
+      filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.16));
     }
 
     .soldier.one {
@@ -468,41 +736,29 @@
       top: 68%;
     }
 
-    .soldier::before {
-      content: "";
+    .soldier-person {
       position: absolute;
-      left: 9px;
+      left: 2px;
       top: 0;
-      width: 20px;
-      height: 20px;
+      width: 39px;
+      height: 43px;
+      padding: 3px;
       border: 3px solid var(--line);
-      border-radius: 50% 50% 7px 7px;
-      background: #f0bf8e;
+      border-radius: 13px;
+      background: #ddeaf4;
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.11);
+      box-sizing: border-box;
     }
 
-    .soldier::after {
-      content: "";
+    .soldier-bow {
       position: absolute;
-      left: 5px;
-      bottom: 0;
-      width: 28px;
-      height: 27px;
-      border: 3px solid var(--line);
-      border-radius: 8px 8px 4px 4px;
-      background: #6b8fd6;
-      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.12);
-    }
-
-    .bow {
-      position: absolute;
-      z-index: 9;
-      right: -17px;
-      top: 18px;
-      width: 19px;
-      height: 34px;
-      border: 3px solid var(--wood-dark);
-      border-left: 0;
-      border-radius: 0 20px 20px 0;
+      right: -18px;
+      top: 16px;
+      width: 30px;
+      height: 30px;
+      color: var(--wood-dark);
+      stroke-width: 2.7;
+      transform: rotate(11deg);
     }
 
     .enemy-layer,
@@ -549,48 +805,145 @@
       animation: enemyOver 500ms ease;
     }
 
-    .enemy-body {
+    .enemy.is-at-castle .enemy-figure {
+      animation: enemyCastleAttack 760ms ease-in-out infinite;
+      background: linear-gradient(#efb086 0 50%, #c86d4f 51%);
+    }
+
+    .enemy-figure {
       position: absolute;
       left: 8px;
-      right: 8px;
-      bottom: 7px;
-      height: 66px;
+      top: 2px;
+      width: 66px;
+      height: 78px;
+      display: grid;
+      place-items: center;
       border: 3px solid var(--line);
-      border-radius: 18px 18px 9px 9px;
-      background: #d8835c;
+      border-radius: 18px 18px 10px 10px;
+      background: linear-gradient(#d8835c 0 52%, #704047 53%);
       box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.12);
+      z-index: 1;
     }
 
-    .enemy-body::before,
-    .enemy-body::after {
-      content: "";
+    .enemy-creature {
+      position: relative;
+      display: block;
+      width: 56px;
+      height: 64px;
+    }
+
+    .enemy-creature .person-icon {
       position: absolute;
-      bottom: -12px;
-      width: 16px;
-      height: 14px;
-      border: 3px solid var(--line);
-      border-top: 0;
-      border-radius: 0 0 7px 7px;
-      background: var(--wood-dark);
     }
 
-    .enemy-body::before {
+    .enemy-creature-sword {
+      left: 8%;
+      top: 8%;
+      width: 84%;
+      height: 72%;
+      color: #ffe08b;
+      stroke-width: 2.15;
+      transform: rotate(-28deg);
+      transform-origin: 50% 50%;
+    }
+
+    .enemy-creature-shield {
+      left: 16%;
+      top: 25%;
+      width: 68%;
+      height: 68%;
+      color: #263f39;
+      stroke-width: 2.35;
+    }
+
+    .enemy-creature-skull {
+      left: 24%;
+      top: 4%;
+      width: 52%;
+      height: 48%;
+      color: #fff3b7;
+      stroke-width: 2.45;
+      filter: drop-shadow(0 2px 0 rgba(38, 50, 56, 0.42));
+    }
+
+    .enemy.is-big {
+      width: 116px;
+      height: 154px;
+      transform: translate(-50%, -58%);
+      filter: drop-shadow(0 9px 0 rgba(0, 0, 0, 0.18));
+    }
+
+    .enemy.is-big .enemy-figure {
       left: 8px;
-    }
-
-    .enemy-body::after {
-      right: 8px;
-    }
-
-    .enemy-head {
-      position: absolute;
-      left: 20px;
       top: 0;
-      width: 34px;
-      height: 30px;
+      width: 100px;
+      height: 146px;
+      border-radius: 22px 22px 12px 12px;
+      background: linear-gradient(#bf6f69 0 48%, #6b4b64 49%);
+      box-shadow:
+        inset 0 -12px 0 rgba(0, 0, 0, 0.14),
+        inset 0 10px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .enemy.is-big .enemy-creature {
+      width: 86px;
+      height: 104px;
+      opacity: 0.42;
+      transform: translateY(22px);
+    }
+
+    .enemy-slots {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      top: 12px;
+      width: 82px;
+      display: grid;
+      gap: 5px;
+      transform: translateX(-50%);
+    }
+
+    .enemy-slot {
+      min-height: 38px;
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 4px;
       border: 3px solid var(--line);
-      border-radius: 14px 14px 8px 8px;
-      background: #bfc8cc;
+      border-radius: 7px;
+      background: #fff3b7;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+      transition: background 140ms ease, transform 140ms ease, opacity 140ms ease;
+    }
+
+    .enemy-slot.is-active {
+      background: #ffffff;
+      transform: translateX(-3px);
+    }
+
+    .enemy-slot.is-filled {
+      background: var(--mint);
+      transform: translateX(0);
+    }
+
+    .enemy-slot-number {
+      display: grid;
+      place-items: center;
+      font-size: 1.05rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .enemy-slot.is-filled .enemy-slot-number {
+      opacity: 0;
+    }
+
+    .enemy-slot-pattern {
+      --dot-size: 3px;
+      gap: 2px;
+      justify-self: center;
     }
 
     .enemy-number {
@@ -608,6 +961,7 @@
       font-weight: 900;
       font-variant-numeric: tabular-nums;
       transform: translateX(-50%);
+      z-index: 4;
     }
 
     .count-pattern {
@@ -652,6 +1006,7 @@
       border-radius: 7px;
       background: rgba(255, 255, 255, 0.9);
       transform: translateX(-50%);
+      z-index: 4;
     }
 
     .shot-burst {
@@ -731,6 +1086,20 @@
       box-shadow:
         inset 0 -6px 0 rgba(0, 0, 0, 0.15),
         0 6px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .floating-text.coin-mini {
+      min-width: 24px;
+      min-height: 24px;
+      padding: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.82) 0 14%, transparent 34%),
+        var(--gold);
+      color: transparent;
+      box-shadow:
+        inset 0 -4px 0 rgba(0, 0, 0, 0.15),
+        0 4px 0 rgba(0, 0, 0, 0.12);
     }
 
     .floating-text.coin-spend {
@@ -839,27 +1208,29 @@
 
     .number-panel {
       min-width: 0;
-      padding: 12px;
+      min-height: 0;
+      padding: var(--panel-pad);
       display: grid;
       grid-template-rows: auto 1fr;
       justify-items: center;
       align-content: start;
-      gap: 10px;
+      gap: var(--panel-gap);
+      overflow: hidden;
     }
 
     .panel-actions {
       width: 196px;
       max-width: 100%;
       display: grid;
-      grid-template-columns: 72px 52px 52px;
-      gap: 10px;
+      grid-template-columns: var(--deploy-size) var(--tool-width) var(--tool-width);
+      gap: var(--panel-gap);
       align-items: stretch;
       justify-content: center;
     }
 
     .deploy-button {
-      width: 72px;
-      min-height: 72px;
+      width: var(--deploy-size);
+      min-height: var(--deploy-size);
       border: 3px solid var(--line);
       border-radius: var(--radius);
       background: var(--green);
@@ -888,38 +1259,28 @@
     }
 
     .deploy-icon {
-      width: 48px;
-      height: 48px;
-      display: block;
-      position: relative;
+      width: 1em;
+      height: 1em;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, "Apple Color Emoji", "Segoe UI Symbol", sans-serif;
+      font-size: clamp(2.1rem, 5.3vh, 3.2rem);
+      font-weight: 900;
+      line-height: 1;
     }
 
     .deploy-icon::before {
       content: "";
-      position: absolute;
-      left: 12px;
-      top: 5px;
-      width: 24px;
-      height: 38px;
-      border: 5px solid #fffdf7;
-      border-left: 0;
-      border-radius: 0 30px 30px 0;
-    }
-
-    .deploy-icon::after {
-      content: "";
-      position: absolute;
-      left: 13px;
-      top: 6px;
-      width: 4px;
-      height: 38px;
-      border-radius: 3px;
+      display: block;
+      width: 0.78em;
+      height: 0.78em;
       background: #fffdf7;
+      clip-path: polygon(28% 16%, 28% 84%, 82% 50%);
     }
 
     .panel-icon-button {
-      width: 52px;
-      min-height: 72px;
+      width: var(--tool-width);
+      min-height: var(--deploy-size);
       border: 3px solid var(--line);
       border-radius: var(--radius);
       background: #ffffff;
@@ -949,78 +1310,37 @@
 
     .pause-icon,
     .reset-icon {
-      width: 30px;
-      height: 30px;
-      display: block;
-      position: relative;
-    }
-
-    .pause-icon::before,
-    .pause-icon::after {
-      content: "";
-      position: absolute;
-      top: 4px;
-      width: 8px;
-      height: 22px;
-      border-radius: 2px;
-      background: var(--line);
+      width: 1em;
+      height: 1em;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, "Apple Color Emoji", "Segoe UI Symbol", sans-serif;
+      font-size: clamp(1.7rem, 3.8vh, 2.25rem);
+      font-weight: 900;
+      line-height: 1;
     }
 
     .pause-icon::before {
-      left: 6px;
-    }
-
-    .pause-icon::after {
-      right: 6px;
+      content: "⏸";
+      color: var(--line);
     }
 
     .panel-icon-button[data-mode="resume"] .pause-icon::before {
-      left: 8px;
-      top: 3px;
-      width: 0;
-      height: 0;
-      border-top: 12px solid transparent;
-      border-bottom: 12px solid transparent;
-      border-left: 18px solid var(--green-deep);
-      border-radius: 0;
-      background: transparent;
-    }
-
-    .panel-icon-button[data-mode="resume"] .pause-icon::after {
-      display: none;
+      content: "▶";
+      color: var(--green-deep);
+      transform: translateX(0.06em);
     }
 
     .reset-icon::before {
-      content: "";
-      position: absolute;
-      left: 3px;
-      top: 4px;
-      width: 21px;
-      height: 21px;
-      border: 4px solid var(--line);
-      border-left-color: transparent;
-      border-radius: 50%;
-      transform: rotate(-28deg);
-    }
-
-    .reset-icon::after {
-      content: "";
-      position: absolute;
-      left: 5px;
-      top: 3px;
-      width: 0;
-      height: 0;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-right: 11px solid var(--line);
-      transform: rotate(-16deg);
+      content: "↻";
+      color: var(--line);
     }
 
     .number-grid {
       width: 146px;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 7px;
+      gap: var(--button-gap);
       align-content: start;
       justify-self: center;
     }
@@ -1028,7 +1348,7 @@
     .number-button {
       width: 146px;
       min-width: 146px;
-      min-height: 50px;
+      min-height: var(--number-row-height);
       border: 3px solid var(--line);
       border-radius: var(--radius);
       background: #fff;
@@ -1039,7 +1359,7 @@
       justify-content: start;
       justify-items: start;
       gap: 3px;
-      padding: 6px 8px;
+      padding: clamp(3px, 0.7vh, 6px) 8px;
       box-shadow: 0 5px 0 var(--shadow);
       font-weight: 900;
       font-variant-numeric: tabular-nums;
@@ -1048,15 +1368,15 @@
     }
 
     .button-number {
-      font-size: 1.36rem;
+      font-size: clamp(1.08rem, 2.5vh, 1.36rem);
       line-height: 1;
       justify-self: center;
     }
 
     .button-pattern {
-      --dot-size: 6px;
+      --dot-size: clamp(4px, 0.66vh, 6px);
       justify-self: start;
-      padding: 3px 4px;
+      padding: clamp(2px, 0.38vh, 3px) 4px;
       border: 2px solid rgba(45, 70, 64, 0.6);
       border-radius: 7px;
       background: rgba(255, 250, 240, 0.82);
@@ -1077,7 +1397,7 @@
     .special-button {
       width: 146px;
       min-width: 146px;
-      min-height: 56px;
+      min-height: var(--special-row-height);
       border: 3px solid var(--line);
       border-radius: var(--radius);
       background: #fff3b7;
@@ -1087,7 +1407,7 @@
       grid-template-rows: auto auto;
       align-items: center;
       column-gap: 7px;
-      padding: 6px 8px;
+      padding: clamp(4px, 0.7vh, 6px) 8px;
       box-shadow: 0 5px 0 var(--shadow);
       font-weight: 900;
       cursor: pointer;
@@ -1117,8 +1437,8 @@
 
     .special-icon {
       grid-row: 1 / 3;
-      width: 28px;
-      height: 28px;
+      width: clamp(22px, 3.4vh, 28px);
+      height: clamp(22px, 3.4vh, 28px);
       display: block;
       position: relative;
       justify-self: center;
@@ -1198,19 +1518,19 @@
     }
 
     .special-label {
-      font-size: 0.86rem;
+      font-size: clamp(0.72rem, 1.55vh, 0.86rem);
       line-height: 1.05;
     }
 
     .special-cost {
       color: var(--soft-ink);
-      font-size: 0.72rem;
+      font-size: clamp(0.64rem, 1.35vh, 0.72rem);
       line-height: 1.05;
     }
 
     .control-bar {
-      min-height: 72px;
-      padding: 12px;
+      min-height: clamp(50px, 7.2vh, 72px);
+      padding: var(--panel-pad);
       display: grid;
       grid-template-columns: minmax(120px, 1fr) auto;
       align-items: center;
@@ -1222,7 +1542,7 @@
       font-weight: 900;
     }
 
-    @media (max-width: 1080px) {
+    @media (max-width: 820px) {
       body {
         padding: 10px;
       }
@@ -1280,6 +1600,88 @@
       }
     }
 
+    @media (max-height: 700px) and (min-width: 821px) {
+      :root {
+        --shell-gap: 7px;
+        --panel-pad: 7px;
+        --panel-gap: 5px;
+        --button-gap: 4px;
+        --deploy-size: 44px;
+        --tool-width: 40px;
+        --number-row-height: 30px;
+        --special-row-height: 34px;
+      }
+
+      .app-header {
+        min-height: 64px;
+        padding: 8px 12px;
+      }
+
+      .brand {
+        gap: 10px;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+      }
+
+      .brand-text p {
+        display: none;
+      }
+
+      .status-card {
+        min-height: 52px;
+        padding: 7px 9px;
+      }
+
+      .status-label {
+        margin-bottom: 3px;
+      }
+
+      .status-value {
+        font-size: 1.22rem;
+      }
+
+      .meter {
+        height: 13px;
+        margin-top: 5px;
+      }
+
+      .battlefield {
+        min-height: clamp(300px, calc(100dvh - 240px), 420px);
+      }
+
+      .control-bar {
+        min-height: 44px;
+      }
+    }
+
+    @media (max-height: 620px) and (min-width: 821px) {
+      .app-header {
+        min-height: 56px;
+        padding-block: 6px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+      }
+
+      .brand-text h1 {
+        font-size: 1.35rem;
+      }
+
+      .badge {
+        min-height: 30px;
+        padding: 4px 8px;
+      }
+
+      .battlefield {
+        min-height: clamp(270px, calc(100dvh - 212px), 360px);
+      }
+    }
+
     @media (max-width: 720px) {
       .page-links {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1304,12 +1706,85 @@
       }
 
       .battlefield {
-        min-height: 410px;
+        min-height: clamp(300px, calc(100dvh - 320px), 410px);
+      }
+
+      .target-hud {
+        top: 46px;
+        left: 60%;
+        width: min(190px, 52%);
+        min-height: 50px;
+        grid-template-columns: auto 1fr auto;
+        gap: 5px;
+        padding: 5px 6px;
+      }
+
+      .target-hud-label {
+        font-size: 0.62rem;
+      }
+
+      .target-hud-number {
+        min-width: 26px;
+        min-height: 26px;
+        font-size: 1rem;
+      }
+
+      .target-hud-pattern-shell {
+        min-width: 54px;
+      }
+
+      .target-pattern {
+        --dot-size: 4px;
+        gap: 2px;
+        padding: 2px 3px;
+      }
+
+      .target-hud-progress {
+        min-width: 30px;
+        padding: 2px 4px;
+        font-size: 0.64rem;
       }
 
       .enemy {
         width: 62px;
         height: 78px;
+      }
+
+      .enemy.is-big {
+        width: 94px;
+        height: 130px;
+      }
+
+      .enemy.is-big .enemy-figure {
+        width: 82px;
+        height: 122px;
+      }
+
+      .enemy.is-big .enemy-creature {
+        width: 72px;
+        height: 88px;
+      }
+
+      .enemy-slots {
+        top: 10px;
+        width: 70px;
+        gap: 4px;
+      }
+
+      .enemy-slot {
+        min-height: 32px;
+        grid-template-columns: 22px 1fr;
+        gap: 3px;
+        padding: 2px 3px;
+      }
+
+      .enemy-slot-number {
+        font-size: 0.95rem;
+      }
+
+      .enemy-slot-pattern {
+        --dot-size: 2.5px;
+        gap: 1px;
       }
 
       .enemy-number {
@@ -1348,7 +1823,16 @@
       }
 
       .battlefield {
-        min-height: 360px;
+        min-height: clamp(270px, calc(100dvh - 300px), 360px);
+      }
+
+      .target-hud {
+        left: 60%;
+        width: min(170px, 55%);
+      }
+
+      .target-pattern {
+        --dot-size: 3.6px;
       }
 
       .number-grid {
@@ -1392,6 +1876,21 @@
 
       58% {
         transform: translate(-56%, -64%) rotate(-5deg);
+      }
+    }
+
+    @keyframes enemyCastleAttack {
+      0%,
+      100% {
+        transform: translateX(0) rotate(0deg);
+      }
+
+      36% {
+        transform: translateX(-4px) rotate(-3deg);
+      }
+
+      68% {
+        transform: translateX(2px) rotate(2deg);
       }
     }
 
@@ -1466,6 +1965,48 @@
       }
     }
 
+    @keyframes treasurePeek {
+      0%,
+      100% {
+        filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.16));
+      }
+
+      50% {
+        filter:
+          drop-shadow(0 4px 0 rgba(0, 0, 0, 0.16))
+          drop-shadow(0 0 10px rgba(240, 195, 78, 0.68));
+      }
+    }
+
+    @keyframes gateRattle {
+      0%,
+      100% {
+        transform: translateX(-50%) rotate(0deg);
+      }
+
+      28% {
+        transform: translateX(-50%) rotate(-1.5deg);
+      }
+
+      58% {
+        transform: translateX(-50%) rotate(1.4deg);
+      }
+    }
+
+    @keyframes treasureCountdownPulse {
+      0% {
+        transform: translate(-50%, -50%) scale(0.66);
+      }
+
+      20% {
+        transform: translate(-50%, -50%) scale(1.08);
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(0.88);
+      }
+    }
+
     @keyframes snipeImpact {
       0% {
         opacity: 0;
@@ -1503,6 +2044,47 @@
 </head>
 <body>
   <main class="game-shell" aria-labelledby="gameTitle">
+    <svg class="icon-sprite" aria-hidden="true" focusable="false">
+      <!-- Character and weapon icons adapted from Tabler Icons (MIT License): https://github.com/tabler/tabler-icons -->
+      <symbol id="icon-human-run" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M12 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+        <path d="M4 17l5 1l.75 -1.5"></path>
+        <path d="M15 21l0 -4l-4 -3l1 -6"></path>
+        <path d="M7 12l0 -3l5 -1l3 3l3 1"></path>
+      </symbol>
+      <symbol id="icon-enemy-sword" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M20 4v5l-9 7l-4 4l-3 -3l4 -4l7 -9z"></path>
+        <path d="M6.5 11.5l6 6"></path>
+      </symbol>
+      <symbol id="icon-enemy-shield" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
+      </symbol>
+      <symbol id="icon-enemy-skull" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M12 4c4.418 0 8 3.358 8 7.5c0 2.934 -2.536 5.5 -5.5 5.5h-5c-2.964 0 -5.5 -2.566 -5.5 -5.5c0 -4.142 3.582 -7.5 8 -7.5z"></path>
+        <path d="M12 17v4"></path>
+        <path d="M8 17v3"></path>
+        <path d="M16 17v3"></path>
+        <path d="M9 11m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+        <path d="M15 11m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+      </symbol>
+      <symbol id="icon-human-guard" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M6 21v-2a4 4 0 0 1 4 -4h2"></path>
+        <path d="M22 16c0 4 -2.5 6 -3.5 6s-3.5 -2 -3.5 -6c1 0 2.5 -.5 3.5 -1.5c1 1 2.5 1.5 3.5 1.5"></path>
+        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+      </symbol>
+      <symbol id="icon-human-bow" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" stroke="none"></path>
+        <path d="M17 3h4v4"></path>
+        <path d="M21 3l-15 15"></path>
+        <path d="M3 18h3v3"></path>
+        <path d="M16.5 20c1.576 -1.576 2.5 -4.095 2.5 -6.5c0 -4.81 -3.69 -8.5 -8.5 -8.5c-2.415 0 -4.922 .913 -6.5 2.5l12.5 12.5z"></path>
+      </symbol>
+    </svg>
     <header class="app-header">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true"></div>
@@ -1513,7 +2095,6 @@
       </div>
       <div class="status-strip" aria-label="進行状況">
         <span class="badge">ゲーム4</span>
-        <span class="badge coin-badge" id="coinBadge">コイン <span id="coinValue">0</span></span>
         <span class="badge alt">スコア <span id="scoreValue">0</span></span>
         <span class="badge warn">最高 <span id="bestValue">0</span></span>
       </div>
@@ -1545,6 +2126,13 @@
         </div>
 
         <div class="battlefield" id="battlefield" aria-label="右から敵が歩いてくる戦場">
+          <span class="badge coin-badge" id="coinBadge">コイン <span id="coinValue">0</span></span>
+          <div class="target-hud is-empty" id="targetHud" aria-live="polite" aria-label="今の相手なし" aria-hidden="true">
+            <span class="target-hud-label" id="targetHudLabel">今の相手</span>
+            <span class="target-hud-number" id="targetHudNumber">-</span>
+            <span class="target-hud-pattern-shell" id="targetHudPattern"></span>
+            <span class="target-hud-progress" id="targetHudProgress"></span>
+          </div>
           <div class="cloud-bank" aria-hidden="true"></div>
           <div class="far-hills" aria-hidden="true"></div>
           <div class="field-grid" aria-hidden="true"></div>
@@ -1557,12 +2145,27 @@
             <p class="status-value"><span id="castleHpValue">10</span> / <span id="castleHpMaxValue">10</span></p>
             <div class="meter health"><span id="castleHpMeter"></span></div>
           </div>
-          <div class="castle-wall" aria-hidden="true">
-            <div class="castle-gate"></div>
-            <div class="soldier one"><span class="bow"></span></div>
-            <div class="soldier two"><span class="bow"></span></div>
-            <div class="soldier three"><span class="bow"></span></div>
-            <div class="soldier four"><span class="bow"></span></div>
+          <div class="castle-wall" id="castleWall">
+            <div class="castle-gate">
+              <span class="treasure-countdown" id="treasureCountdown" aria-hidden="true"></span>
+            </div>
+            <button class="treasure-chest" id="treasureChest" type="button" aria-label="宝箱を開ける" title="宝箱を開ける"></button>
+            <div class="soldier one">
+              <svg class="person-icon soldier-person" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-guard"></use></svg>
+              <svg class="person-icon soldier-bow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-bow"></use></svg>
+            </div>
+            <div class="soldier two">
+              <svg class="person-icon soldier-person" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-guard"></use></svg>
+              <svg class="person-icon soldier-bow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-bow"></use></svg>
+            </div>
+            <div class="soldier three">
+              <svg class="person-icon soldier-person" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-guard"></use></svg>
+              <svg class="person-icon soldier-bow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-bow"></use></svg>
+            </div>
+            <div class="soldier four">
+              <svg class="person-icon soldier-person" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-guard"></use></svg>
+              <svg class="person-icon soldier-bow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-human-bow"></use></svg>
+            </div>
           </div>
           <div class="enemy-layer" id="enemyLayer"></div>
           <div class="arrow-layer" id="arrowLayer"></div>
@@ -1585,18 +2188,36 @@
   <script>
     const lanes = [40, 53, 66, 79];
     const wallX = 18;
+    const castleContactX = wallX + 2;
+    const castleAttackIntervalSeconds = 3;
     const spawnX = 108;
     const waveDurationSeconds = 30;
     const maxCastleHp = 10;
-    const totalWaves = 3;
+    const endlessWaveStart = 4;
+    const maxEndlessEnemies = 14;
     const shotTravelMs = 520;
     const shotIntervalMs = 78;
     const meteorTravelMs = 620;
     const waveTransitionMs = 950;
+    const enemyMoveSpeed = 4.4;
+    const enemySpawnMinGap = 9;
+    const treasureCountdownSeconds = 3;
+    const treasureCountdownMs = treasureCountdownSeconds * 1000;
+    const treasureVisibleMs = 3000;
+    const treasureFirstDelayRangeMs = [5200, 9200];
+    const treasureDelayRangeMs = [11000, 18000];
     const specialCosts = {
       snipe: 2,
       meteor: 10,
       repair: 5
+    };
+    const bigEnemySlotCount = 3;
+    const bigEnemyRewardCoins = 10;
+    const bigEnemyMinNormalSpawnsBetween = 3;
+    const bigEnemySpawnChanceByWave = {
+      1: 0.18,
+      2: 0.22,
+      3: 0.26
     };
     const attackBaseValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const difficultyConfig = {
@@ -1621,6 +2242,7 @@
       2: "normal",
       3: "hard"
     };
+    const endlessDifficulty = "hard";
 
     const refs = {
       coinBadge: document.getElementById("coinBadge"),
@@ -1634,6 +2256,14 @@
       castleHpMaxValue: document.getElementById("castleHpMaxValue"),
       castleHpMeter: document.getElementById("castleHpMeter"),
       battlefield: document.getElementById("battlefield"),
+      castleWall: document.getElementById("castleWall"),
+      treasureChest: document.getElementById("treasureChest"),
+      treasureCountdown: document.getElementById("treasureCountdown"),
+      targetHud: document.getElementById("targetHud"),
+      targetHudLabel: document.getElementById("targetHudLabel"),
+      targetHudNumber: document.getElementById("targetHudNumber"),
+      targetHudPattern: document.getElementById("targetHudPattern"),
+      targetHudProgress: document.getElementById("targetHudProgress"),
       enemyLayer: document.getElementById("enemyLayer"),
       arrowLayer: document.getElementById("arrowLayer"),
       floatingLayer: document.getElementById("floatingLayer"),
@@ -1666,12 +2296,19 @@
       frameId: null,
       lastFrameAt: 0,
       lastSpawnAt: 0,
+      spawnsSinceBigEnemy: 0,
       spawnHoldUntil: 0,
       settleUntil: 0,
       lastButtonValue: null,
       activeButtonUntil: 0,
       coinPulseUntil: 0,
-      meteorPending: false
+      meteorPending: false,
+      treasureOpen: false,
+      treasureCountingDown: false,
+      treasureClaimed: false,
+      treasureNextAt: 0,
+      treasureCountdownStartAt: 0,
+      treasureHideAt: 0
     };
 
     const enemyElements = new Map();
@@ -1679,6 +2316,8 @@
     const floatingElements = new Map();
     const audioState = {
       context: null,
+      primed: false,
+      resumePromise: null,
       supported: Boolean(window.AudioContext || window.webkitAudioContext)
     };
     const coinAudioState = {
@@ -1688,6 +2327,13 @@
     };
     const missAudioState = {
       element: null,
+      url: null,
+      primed: false,
+      supported: typeof Audio !== "undefined"
+    };
+    const bigHitAudioState = {
+      element: null,
+      url: null,
       primed: false,
       supported: typeof Audio !== "undefined"
     };
@@ -1733,29 +2379,110 @@
         }
       }
 
-      if (audioState.context.state === "suspended") {
-        const resume = audioState.context.resume();
-
-        if (resume && typeof resume.catch === "function") {
-          resume.catch(() => {});
-        }
-      }
-
       return audioState.context;
     }
 
-    function safelyPlaySound(play) {
-      const context = getAudioContext();
+    function resumeAudioContext(context) {
+      if (!context || context.state !== "suspended" || typeof context.resume !== "function") {
+        return null;
+      }
 
-      if (!context) {
-        return;
+      if (audioState.resumePromise) {
+        return audioState.resumePromise;
       }
 
       try {
-        play(context);
+        const resume = context.resume();
+
+        if (resume && typeof resume.then === "function") {
+          audioState.resumePromise = resume.then(() => {
+            audioState.resumePromise = null;
+            return context;
+          }).catch((error) => {
+            audioState.resumePromise = null;
+            throw error;
+          });
+          return audioState.resumePromise;
+        }
       } catch (error) {
         audioState.supported = false;
       }
+
+      return null;
+    }
+
+    function safelyPlaySound(play, fallback = null) {
+      const context = getAudioContext();
+      const playFallback = () => {
+        if (typeof fallback === "function") {
+          fallback();
+        }
+      };
+
+      if (!context) {
+        playFallback();
+        return false;
+      }
+
+      const playNow = () => {
+        try {
+          play(context);
+          return true;
+        } catch (error) {
+          audioState.supported = false;
+          playFallback();
+          return false;
+        }
+      };
+
+      if (context.state === "suspended") {
+        const resume = resumeAudioContext(context);
+
+        if (resume && typeof resume.then === "function") {
+          let usedFallback = false;
+          const fallbackTimer = typeof fallback === "function"
+            ? setTimeout(() => {
+              if (context.state !== "running") {
+                usedFallback = true;
+                playFallback();
+              }
+            }, 180)
+            : null;
+
+          resume.then(() => {
+            if (fallbackTimer) {
+              clearTimeout(fallbackTimer);
+            }
+
+            if (usedFallback) {
+              return;
+            }
+
+            if (context.state === "running") {
+              playNow();
+            } else {
+              playFallback();
+            }
+          }).catch(() => {
+            if (fallbackTimer) {
+              clearTimeout(fallbackTimer);
+            }
+
+            if (!usedFallback) {
+              playFallback();
+            }
+          });
+
+          return true;
+        }
+
+        if (context.state === "suspended") {
+          playFallback();
+          return false;
+        }
+      }
+
+      return playNow();
     }
 
     function getCoinAudio() {
@@ -1777,6 +2504,94 @@
       return coinAudioState.element;
     }
 
+    function writeAscii(view, offset, text) {
+      for (let index = 0; index < text.length; index += 1) {
+        view.setUint8(offset + index, text.charCodeAt(index));
+      }
+    }
+
+    function createMissBuzzerAudioUrl() {
+      if (typeof Blob === "undefined" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+        throw new Error("Blob audio is not supported");
+      }
+
+      const sampleRate = 22050;
+      const duration = 0.42;
+      const sampleCount = Math.floor(sampleRate * duration);
+      const bytesPerSample = 2;
+      const buffer = new ArrayBuffer(44 + sampleCount * bytesPerSample);
+      const view = new DataView(buffer);
+
+      writeAscii(view, 0, "RIFF");
+      view.setUint32(4, 36 + sampleCount * bytesPerSample, true);
+      writeAscii(view, 8, "WAVE");
+      writeAscii(view, 12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * bytesPerSample, true);
+      view.setUint16(32, bytesPerSample, true);
+      view.setUint16(34, 16, true);
+      writeAscii(view, 36, "data");
+      view.setUint32(40, sampleCount * bytesPerSample, true);
+
+      for (let index = 0; index < sampleCount; index += 1) {
+        const time = index / sampleRate;
+        const secondPulse = time > 0.2;
+        const pulseTime = secondPulse ? time - 0.2 : time;
+        const envelope = pulseTime < 0.17 ? Math.max(0, 1 - pulseTime / 0.17) : 0;
+        const frequency = secondPulse
+          ? 190 - pulseTime * 460
+          : 240 - pulseTime * 520;
+        const square = Math.sin(Math.PI * 2 * frequency * time) >= 0 ? 1 : -1;
+        const grit = Math.sin(index * 12.9898) * 0.16;
+        const sample = clamp((square * 0.82 + grit) * envelope * 0.62, -1, 1);
+        view.setInt16(44 + index * bytesPerSample, Math.round(sample * 32767), true);
+      }
+
+      return URL.createObjectURL(new Blob([view], { type: "audio/wav" }));
+    }
+
+    function createBigHitAudioUrl() {
+      if (typeof Blob === "undefined" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+        throw new Error("Blob audio is not supported");
+      }
+
+      const sampleRate = 22050;
+      const duration = 0.32;
+      const sampleCount = Math.floor(sampleRate * duration);
+      const bytesPerSample = 2;
+      const buffer = new ArrayBuffer(44 + sampleCount * bytesPerSample);
+      const view = new DataView(buffer);
+
+      writeAscii(view, 0, "RIFF");
+      view.setUint32(4, 36 + sampleCount * bytesPerSample, true);
+      writeAscii(view, 8, "WAVE");
+      writeAscii(view, 12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * bytesPerSample, true);
+      view.setUint16(32, bytesPerSample, true);
+      view.setUint16(34, 16, true);
+      writeAscii(view, 36, "data");
+      view.setUint32(40, sampleCount * bytesPerSample, true);
+
+      for (let index = 0; index < sampleCount; index += 1) {
+        const time = index / sampleRate;
+        const envelope = Math.exp(-time * 10.5);
+        const clang = Math.sin(Math.PI * 2 * 760 * time) * Math.exp(-time * 18);
+        const body = Math.sin(Math.PI * 2 * 118 * time) * Math.exp(-time * 7);
+        const edge = Math.sin(index * 31.713) * Math.exp(-time * 24) * 0.35;
+        const sample = clamp((clang * 0.46 + body * 0.58 + edge) * envelope, -1, 1);
+        view.setInt16(44 + index * bytesPerSample, Math.round(sample * 32767), true);
+      }
+
+      return URL.createObjectURL(new Blob([view], { type: "audio/wav" }));
+    }
+
     function getMissAudio() {
       if (!missAudioState.supported) {
         return null;
@@ -1784,7 +2599,15 @@
 
       if (!missAudioState.element) {
         try {
-          missAudioState.element = new Audio("assets/audio/poka02.mp3");
+          if (!missAudioState.url) {
+            try {
+              missAudioState.url = createMissBuzzerAudioUrl();
+            } catch (error) {
+              missAudioState.url = "assets/audio/poka02.mp3";
+            }
+          }
+
+          missAudioState.element = new Audio(missAudioState.url);
           missAudioState.element.preload = "auto";
           missAudioState.element.load();
         } catch (error) {
@@ -1794,6 +2617,29 @@
       }
 
       return missAudioState.element;
+    }
+
+    function getBigHitAudio() {
+      if (!bigHitAudioState.supported) {
+        return null;
+      }
+
+      if (!bigHitAudioState.element) {
+        try {
+          if (!bigHitAudioState.url) {
+            bigHitAudioState.url = createBigHitAudioUrl();
+          }
+
+          bigHitAudioState.element = new Audio(bigHitAudioState.url);
+          bigHitAudioState.element.preload = "auto";
+          bigHitAudioState.element.load();
+        } catch (error) {
+          bigHitAudioState.supported = false;
+          return null;
+        }
+      }
+
+      return bigHitAudioState.element;
     }
 
     function primeCoinSound() {
@@ -1852,6 +2698,41 @@
           audio.currentTime = 0;
           audio.volume = previousVolume;
           missAudioState.primed = true;
+        };
+
+        if (playPromise && typeof playPromise.then === "function") {
+          playPromise.then(finishPrime).catch(() => {
+            audio.volume = previousVolume;
+          });
+        } else {
+          finishPrime();
+        }
+      } catch (error) {
+        audio.volume = previousVolume;
+      }
+    }
+
+    function primeBigHitSound() {
+      if (bigHitAudioState.primed) {
+        return;
+      }
+
+      const audio = getBigHitAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      const previousVolume = audio.volume;
+      audio.volume = 0;
+
+      try {
+        const playPromise = audio.play();
+        const finishPrime = () => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = previousVolume;
+          bigHitAudioState.primed = true;
         };
 
         if (playPromise && typeof playPromise.then === "function") {
@@ -1932,7 +2813,45 @@
     }
 
     function primeSynthSound() {
-      getAudioContext();
+      const context = getAudioContext();
+
+      if (!context) {
+        return;
+      }
+
+      const prime = () => {
+        if (audioState.primed || context.state !== "running") {
+          return;
+        }
+
+        try {
+          const source = context.createBufferSource();
+          const volume = context.createGain();
+          source.buffer = context.createBuffer(1, 1, context.sampleRate);
+          volume.gain.setValueAtTime(0.0001, context.currentTime);
+          source.connect(volume);
+          volume.connect(context.destination);
+          source.start();
+          source.addEventListener("ended", () => {
+            source.disconnect();
+            volume.disconnect();
+          }, { once: true });
+          audioState.primed = true;
+        } catch (error) {
+          audioState.primed = false;
+        }
+      };
+
+      if (context.state === "running") {
+        prime();
+        return;
+      }
+
+      const resume = resumeAudioContext(context);
+
+      if (resume && typeof resume.then === "function") {
+        resume.then(prime).catch(() => {});
+      }
     }
 
     function playShotSound(value) {
@@ -1999,6 +2918,42 @@
       });
     }
 
+    function playBigEnemyHitSound() {
+      playBigHitAudioSound();
+      safelyPlaySound((context) => {
+        [
+          { type: "square", start: 0.00, frequency: 176, endFrequency: 94, duration: 0.15, gain: 0.056 },
+          { type: "triangle", start: 0.018, frequency: 92, endFrequency: 54, duration: 0.18, gain: 0.052 },
+          { type: "sine", start: 0.026, frequency: 520, endFrequency: 390, duration: 0.07, gain: 0.032 },
+          { type: "sine", start: 0.052, frequency: 690, endFrequency: 470, duration: 0.075, gain: 0.024 }
+        ].forEach((tone) => createTone(context, tone));
+        createNoiseBurst(context, { start: 0.006, duration: 0.07, gain: 0.045, frequency: 1400, filterType: "bandpass", q: 1.35 });
+        createNoiseBurst(context, { start: 0.06, duration: 0.11, gain: 0.028, frequency: 250, filterType: "lowpass", q: 0.6 });
+      });
+    }
+
+    function playBigHitAudioSound() {
+      const audio = getBigHitAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 1;
+
+        const playPromise = audio.play();
+
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      } catch (error) {
+        bigHitAudioState.element = null;
+      }
+    }
+
     function playCoinSound() {
       const audio = getCoinAudio();
 
@@ -2021,7 +2976,7 @@
       }
     }
 
-    function playMissSound() {
+    function playMissFallbackSound() {
       const audio = getMissAudio();
 
       if (!audio) {
@@ -2031,7 +2986,7 @@
       try {
         audio.pause();
         audio.currentTime = 0;
-        audio.volume = 0.9;
+        audio.volume = 1;
 
         const playPromise = audio.play();
 
@@ -2039,8 +2994,22 @@
           playPromise.catch(() => {});
         }
       } catch (error) {
-        missAudioState.supported = false;
+        missAudioState.element = null;
       }
+    }
+
+    function playMissSound() {
+      playMissFallbackSound();
+      safelyPlaySound((context) => {
+        [
+          { type: "square", start: 0.00, frequency: 230, endFrequency: 122, duration: 0.16, gain: 0.066 },
+          { type: "sawtooth", start: 0.018, frequency: 176, endFrequency: 96, duration: 0.145, gain: 0.036 },
+          { type: "square", start: 0.18, frequency: 198, endFrequency: 88, duration: 0.17, gain: 0.068 },
+          { type: "sawtooth", start: 0.205, frequency: 148, endFrequency: 66, duration: 0.15, gain: 0.034 }
+        ].forEach((tone) => createTone(context, tone));
+        createNoiseBurst(context, { start: 0.008, duration: 0.075, gain: 0.04, frequency: 650, filterType: "bandpass", q: 1.2 });
+        createNoiseBurst(context, { start: 0.18, duration: 0.085, gain: 0.036, frequency: 430, filterType: "bandpass", q: 1 });
+      });
     }
 
     function playWaveFanfare() {
@@ -2101,19 +3070,60 @@
     }
 
     function spawnInterval() {
-      return Math.max(680, 1800 - state.wave * 170);
+      if (state.wave < endlessWaveStart) {
+        return Math.max(900, 1800 - state.wave * 170);
+      }
+
+      return Math.max(760, 1210 - (state.wave - endlessWaveStart) * 75);
     }
 
     function maxEnemies() {
-      return Math.min(10, 4 + state.wave);
+      if (state.wave < endlessWaveStart) {
+        return 4 + state.wave;
+      }
+
+      return Math.min(maxEndlessEnemies, 8 + Math.floor((state.wave - endlessWaveStart) / 2));
+    }
+
+    function nextEnemySpawnX() {
+      const backEnemyX = activeEnemies().reduce((maxX, enemy) => Math.max(maxX, enemy.x), spawnX - enemySpawnMinGap);
+      return Math.max(spawnX, backEnemyX + enemySpawnMinGap);
     }
 
     function randomEnemyValue() {
       return 1 + Math.floor(Math.random() * 9);
     }
 
+    function createBigEnemySlots() {
+      return Array.from({ length: bigEnemySlotCount }, () => {
+        const value = randomEnemyValue();
+        return {
+          value,
+          visualValue: value,
+          filled: false
+        };
+      });
+    }
+
+    function shouldSpawnBigEnemy() {
+      const hasActiveBigEnemy = activeEnemies().some((enemy) => isBigEnemy(enemy));
+      const chance = bigEnemySpawnChanceByWave[state.wave] ?? Math.min(
+        0.38,
+        bigEnemySpawnChanceByWave[3] + Math.floor((state.wave - 3) / 2) * 0.02
+      );
+
+      return (
+        !hasActiveBigEnemy &&
+        state.spawnsSinceBigEnemy >= bigEnemyMinNormalSpawnsBetween &&
+        Math.random() < chance
+      );
+    }
+
     function currentDifficulty() {
-      return difficultyConfig[waveRuleConfig[state.wave]] || difficultyConfig.easy;
+      const difficultyKey = waveRuleConfig[state.wave] || (
+        state.wave >= endlessWaveStart ? endlessDifficulty : "easy"
+      );
+      return difficultyConfig[difficultyKey] || difficultyConfig.easy;
     }
 
     function currentWaveLabel() {
@@ -2162,19 +3172,221 @@
       return pattern;
     }
 
+    function isBigEnemy(enemy) {
+      return Boolean(enemy && (enemy.isBig || enemy.type === "big"));
+    }
+
+    function currentBigSlotIndex(enemy) {
+      if (!isBigEnemy(enemy) || !Array.isArray(enemy.slots)) {
+        return -1;
+      }
+
+      enemy.slotIndex = enemy.slots.findIndex((slot) => !slot.filled);
+      return enemy.slotIndex;
+    }
+
+    function currentBigSlot(enemy) {
+      const slotIndex = currentBigSlotIndex(enemy);
+      return slotIndex >= 0 ? enemy.slots[slotIndex] : null;
+    }
+
+    function currentEnemyValue(enemy) {
+      if (!isBigEnemy(enemy)) {
+        return enemy.value;
+      }
+
+      const slot = currentBigSlot(enemy);
+
+      if (!slot) {
+        enemy.value = 10;
+        enemy.visualValue = 10;
+        return 10;
+      }
+
+      enemy.value = slot.value;
+      enemy.visualValue = slot.visualValue;
+      return slot.value;
+    }
+
+    function targetDisplayInfo(enemy) {
+      if (!isBigEnemy(enemy)) {
+        return {
+          label: "今の相手",
+          value: enemy.value,
+          progress: "",
+          aria: `今の相手、${enemy.value}の敵`
+        };
+      }
+
+      const slotIndex = currentBigSlotIndex(enemy);
+      const slot = slotIndex >= 0 ? enemy.slots[slotIndex] : null;
+      const slotCount = enemy.slots.length;
+
+      if (!slot) {
+        return {
+          label: "大きな敵",
+          value: 10,
+          progress: `${slotCount}/${slotCount}`,
+          aria: "今の相手、大きな敵、すべて達成"
+        };
+      }
+
+      return {
+        label: "大きな敵",
+        value: slot.value,
+        progress: `${slotIndex + 1}/${slotCount}`,
+        aria: `今の相手、大きな敵、${slotIndex + 1}段目、${slot.value}`
+      };
+    }
+
+    function isBigEnemyComplete(enemy) {
+      return isBigEnemy(enemy) && enemy.slots.every((slot) => slot.filled);
+    }
+
+    function bigEnemyAriaLabel(enemy) {
+      if (!isBigEnemy(enemy)) {
+        return `${enemy.value}の敵`;
+      }
+
+      const remaining = enemy.slots
+        .map((slot, index) => slot.filled ? "" : `${index + 1}段目${slot.value}`)
+        .filter(Boolean)
+        .join("、");
+
+      return remaining ? `大きな敵。${remaining}` : "大きな敵。すべて達成";
+    }
+
+    function syncBigEnemyElement(enemy, element = enemyElements.get(enemy.id)) {
+      if (!isBigEnemy(enemy) || !element) {
+        return;
+      }
+
+      const activeSlotIndex = currentBigSlotIndex(enemy);
+      element.setAttribute("aria-label", bigEnemyAriaLabel(enemy));
+      element.querySelectorAll(".enemy-slot").forEach((slotElement, index) => {
+        const slot = enemy.slots[index];
+
+        if (!slot) {
+          return;
+        }
+
+        const number = slotElement.querySelector(".enemy-slot-number");
+        const visualValue = slot.filled ? 10 : slot.visualValue;
+        slotElement.classList.toggle("is-filled", slot.filled);
+        slotElement.classList.toggle("is-active", index === activeSlotIndex && !enemy.hit);
+        slotElement.setAttribute("aria-label", slot.filled ? `${index + 1}段目達成` : `${index + 1}段目 ${slot.value}`);
+
+        if (number) {
+          number.textContent = slot.filled ? "" : String(slot.value);
+        }
+
+        if (slotElement.countPattern) {
+          setPatternValue(slotElement.countPattern, visualValue);
+        }
+      });
+    }
+
+    function setBigEnemySlotVisualValue(enemy, slotIndex, value) {
+      const slot = enemy.slots && enemy.slots[slotIndex];
+
+      if (!slot) {
+        return;
+      }
+
+      slot.visualValue = clamp(value, 0, 10);
+
+      if (slotIndex === currentBigSlotIndex(enemy)) {
+        enemy.visualValue = slot.visualValue;
+      }
+
+      syncBigEnemyElement(enemy);
+    }
+
+    function setBigEnemySlotValue(enemy, value) {
+      const slot = currentBigSlot(enemy);
+
+      if (!slot) {
+        return;
+      }
+
+      slot.value = clamp(value, 1, 9);
+      slot.visualValue = slot.value;
+      enemy.value = slot.value;
+      enemy.visualValue = slot.visualValue;
+      syncBigEnemyElement(enemy);
+    }
+
+    function fillBigEnemySlot(enemy, slotIndex) {
+      const slot = enemy.slots && enemy.slots[slotIndex];
+
+      if (!slot) {
+        return;
+      }
+
+      slot.filled = true;
+      slot.visualValue = 10;
+
+      const nextSlot = currentBigSlot(enemy);
+
+      if (nextSlot) {
+        enemy.value = nextSlot.value;
+        enemy.visualValue = nextSlot.visualValue;
+      } else {
+        enemy.value = 10;
+        enemy.visualValue = 10;
+      }
+
+      syncBigEnemyElement(enemy);
+    }
+
+    function completeBigEnemySlots(enemy) {
+      if (!isBigEnemy(enemy)) {
+        return;
+      }
+
+      enemy.slots.forEach((slot) => {
+        slot.filled = true;
+        slot.visualValue = 10;
+      });
+      enemy.slotIndex = -1;
+      enemy.value = 10;
+      enemy.visualValue = 10;
+      syncBigEnemyElement(enemy);
+    }
+
+    function enemyImpactY(target) {
+      const laneY = lanes[target.laneIndex];
+
+      if (!isBigEnemy(target)) {
+        return laneY - 6;
+      }
+
+      const slotIndex = Math.max(0, currentBigSlotIndex(target));
+      return laneY - 17 + slotIndex * 8;
+    }
+
+    function enemyFloatingY(target, slotIndex = currentBigSlotIndex(target)) {
+      if (!isBigEnemy(target)) {
+        return lanes[target.laneIndex] - 15;
+      }
+
+      return lanes[target.laneIndex] - 30 + Math.max(0, slotIndex) * 10;
+    }
+
     function advanceEnemiesForMiss(ratio) {
       const distance = (spawnX - wallX) * ratio;
       const target = activeEnemies()
+        .filter((enemy) => !enemy.atCastle)
         .sort((a, b) => a.x - b.x)[0] || null;
 
       if (!target) {
         return false;
       }
 
-      target.x -= distance;
+      target.x = Math.max(castleContactX, target.x - distance);
 
-      if (state.phase === "playing" && target.x <= wallX + 2) {
-        damageCastle(target);
+      if (state.phase === "playing" && target.x <= castleContactX) {
+        markEnemyAtCastle(target);
       }
 
       return true;
@@ -2262,6 +3474,16 @@
     }
 
     function setEnemyVisualValue(enemy, value) {
+      if (isBigEnemy(enemy)) {
+        const slotIndex = currentBigSlotIndex(enemy);
+
+        if (slotIndex >= 0) {
+          setBigEnemySlotVisualValue(enemy, slotIndex, value);
+        }
+
+        return;
+      }
+
       enemy.visualValue = clamp(value, 0, 10);
       const element = enemyElements.get(enemy.id);
 
@@ -2271,6 +3493,11 @@
     }
 
     function setEnemyValue(enemy, value) {
+      if (isBigEnemy(enemy)) {
+        setBigEnemySlotValue(enemy, value);
+        return;
+      }
+
       enemy.value = clamp(value, 1, 9);
       setEnemyVisualValue(enemy, enemy.value);
       const element = enemyElements.get(enemy.id);
@@ -2290,6 +3517,46 @@
 
     function animateEnemyPattern(enemy, toValue, shouldRestore) {
       clearEnemyTimers(enemy);
+
+      if (isBigEnemy(enemy)) {
+        const slotIndex = currentBigSlotIndex(enemy);
+
+        if (slotIndex < 0) {
+          return;
+        }
+
+        const slot = enemy.slots[slotIndex];
+        const fromValue = clamp(slot.visualValue, 0, 10);
+        const finalValue = clamp(toValue, 0, 10);
+        const direction = finalValue >= fromValue ? 1 : -1;
+        let delay = 0;
+
+        for (
+          let value = fromValue + direction;
+          direction > 0 ? value <= finalValue : value >= finalValue;
+          value += direction
+        ) {
+          delay += 70;
+          const timerId = setTimeout(() => setBigEnemySlotVisualValue(enemy, slotIndex, value), delay);
+          enemy.animationTimers.push(timerId);
+        }
+
+        if (fromValue === finalValue) {
+          setBigEnemySlotVisualValue(enemy, slotIndex, finalValue);
+        }
+
+        if (shouldRestore) {
+          const timerId = setTimeout(() => {
+            const currentSlot = enemy.slots[slotIndex];
+            if (currentSlot && !currentSlot.filled) {
+              setBigEnemySlotVisualValue(enemy, slotIndex, currentSlot.value);
+            }
+          }, delay + 420);
+          enemy.animationTimers.push(timerId);
+        }
+
+        return;
+      }
 
       const fromValue = clamp(enemy.visualValue, 0, 10);
       const finalValue = clamp(toValue, 0, 10);
@@ -2328,25 +3595,72 @@
       setTimeout(() => element.classList.remove(className), 520);
     }
 
+    function createSvgUse(symbolId, className) {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("focusable", "false");
+      className.split(" ").filter(Boolean).forEach((name) => svg.classList.add(name));
+
+      const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", `#${symbolId}`);
+      svg.append(use);
+      return svg;
+    }
+
+    function createEnemyGlyph() {
+      const glyph = document.createElement("span");
+      glyph.className = "enemy-creature";
+      glyph.setAttribute("aria-hidden", "true");
+      glyph.append(
+        createSvgUse("icon-enemy-sword", "person-icon enemy-creature-sword"),
+        createSvgUse("icon-enemy-shield", "person-icon enemy-creature-shield"),
+        createSvgUse("icon-enemy-skull", "person-icon enemy-creature-skull")
+      );
+      return glyph;
+    }
+
     function createEnemyElement(enemy) {
       const element = document.createElement("div");
-      element.className = "enemy";
+      element.className = isBigEnemy(enemy) ? "enemy is-big" : "enemy";
       element.setAttribute("role", "img");
-      element.setAttribute("aria-label", `${enemy.value}の敵`);
+      element.setAttribute("aria-label", bigEnemyAriaLabel(enemy));
 
-      const head = document.createElement("span");
-      head.className = "enemy-head";
+      const figure = document.createElement("span");
+      figure.className = "enemy-figure";
+      figure.append(createEnemyGlyph());
 
-      const body = document.createElement("span");
-      body.className = "enemy-body";
+      if (isBigEnemy(enemy)) {
+        const slots = document.createElement("span");
+        slots.className = "enemy-slots";
 
-      const number = document.createElement("span");
-      number.className = "enemy-number";
-      number.textContent = String(enemy.value);
+        enemy.slots.forEach((slot, index) => {
+          const slotElement = document.createElement("span");
+          slotElement.className = "enemy-slot";
+          slotElement.dataset.slotIndex = String(index);
 
-      const pattern = createCountPattern(enemy.visualValue, "enemy-pattern", "front");
-      element.countPattern = pattern;
-      element.append(head, body, number, pattern);
+          const number = document.createElement("span");
+          number.className = "enemy-slot-number";
+          number.textContent = String(slot.value);
+
+          const pattern = createCountPattern(slot.visualValue, "enemy-slot-pattern", "front");
+          slotElement.countPattern = pattern;
+          slotElement.append(number, pattern);
+          slots.append(slotElement);
+        });
+
+        element.append(figure, slots);
+        syncBigEnemyElement(enemy, element);
+      } else {
+        const number = document.createElement("span");
+        number.className = "enemy-number";
+        number.textContent = String(enemy.value);
+
+        const pattern = createCountPattern(enemy.visualValue, "enemy-pattern", "front");
+        element.countPattern = pattern;
+        element.append(figure, number, pattern);
+      }
+
       refs.enemyLayer.append(element);
       enemyElements.set(enemy.id, element);
       return element;
@@ -2408,19 +3722,29 @@
       }
 
       const laneIndex = Math.floor(Math.random() * lanes.length);
-      const value = randomEnemyValue();
+      const isBig = shouldSpawnBigEnemy();
+      const slots = isBig ? createBigEnemySlots() : null;
+      const value = isBig ? slots[0].value : randomEnemyValue();
+      const spawnPositionX = nextEnemySpawnX();
       state.enemies.push({
         id: state.nextEnemyId,
+        type: isBig ? "big" : "normal",
+        isBig,
         value,
         visualValue: value,
+        slots,
+        slotIndex: isBig ? 0 : -1,
         laneIndex,
-        x: spawnX + Math.random() * 8,
-        speed: 4.2 + state.wave * 0.45 + Math.random() * 1.1,
+        x: spawnPositionX,
+        speed: enemyMoveSpeed,
         hit: false,
         pendingImpact: false,
+        atCastle: false,
+        nextCastleAttackAt: null,
         removeAt: null,
         animationTimers: []
       });
+      state.spawnsSinceBigEnemy = isBig ? 0 : state.spawnsSinceBigEnemy + 1;
       state.nextEnemyId += 1;
     }
 
@@ -2430,8 +3754,27 @@
         .sort((a, b) => a.x - b.x)[0] || null;
     }
 
+    function pendingBigEnemy() {
+      return state.enemies
+        .filter((enemy) => !enemy.hit && enemy.pendingImpact && isBigEnemy(enemy))
+        .sort((a, b) => a.x - b.x)[0] || null;
+    }
+
+    function attackTarget() {
+      return pendingBigEnemy() || closestEnemy();
+    }
+
+    function featuredEnemy() {
+      const pendingTarget = state.enemies
+        .filter((enemy) => !enemy.hit && enemy.pendingImpact)
+        .sort((a, b) => a.x - b.x)[0] || null;
+
+      return pendingTarget || closestEnemy();
+    }
+
     function addArrow(target, value) {
       const laneY = lanes[target.laneIndex];
+      const targetY = enemyImpactY(target);
       const startAt = now();
 
       if (value === 0) {
@@ -2441,7 +3784,7 @@
           fromX: wallX - 2,
           fromY: laneY - 5,
           toX: target.x,
-          toY: laneY - 6,
+          toY: targetY,
           startAt,
           endAt: startAt + shotTravelMs
         });
@@ -2460,7 +3803,7 @@
           fromX: wallX - 2,
           fromY: laneY - 5 + rowOffset * 2,
           toX: target.x - 1 + columnOffset,
-          toY: laneY - 6 + rowOffset * 4,
+          toY: targetY + rowOffset * 4,
           startAt: ballStartAt,
           endAt: ballStartAt + shotTravelMs
         });
@@ -2483,6 +3826,7 @@
 
     function addSpillBalls(target, count) {
       const laneY = lanes[target.laneIndex];
+      const originY = isBigEnemy(target) ? enemyFloatingY(target) : laneY - 8;
 
       for (let index = 0; index < count; index += 1) {
         const rowOffset = (index % 3) - 1;
@@ -2491,9 +3835,9 @@
           id: state.nextFloatingId,
           text: "",
           x: target.x + 1,
-          y: laneY - 8,
+          y: originY,
           toX: target.x + 8 + column * 3,
-          toY: laneY - 28 + rowOffset * 10,
+          toY: originY - 20 + rowOffset * 10,
           kind: "spill",
           startAt: now(),
           endAt: now() + 720
@@ -2502,12 +3846,79 @@
       }
     }
 
-    function addCoinReward(target) {
-      state.coins += 1;
-      state.coinPulseUntil = now() + 480;
-      addFloating("+1", target.x, lanes[target.laneIndex] - 29, "coin");
-      playCoinSound();
-      setTimeout(render, 520);
+    function addCoinBurst(target, count) {
+      const laneY = lanes[target.laneIndex];
+      const burstCount = Math.min(count, 10);
+
+      for (let index = 0; index < burstCount; index += 1) {
+        const rowOffset = (index % 5) - 2;
+        const column = Math.floor(index / 5);
+        state.floating.push({
+          id: state.nextFloatingId,
+          text: "",
+          x: target.x,
+          y: laneY - 20,
+          toX: target.x + rowOffset * 4,
+          toY: laneY - 44 - column * 9 - Math.abs(rowOffset) * 2,
+          kind: "coin-mini",
+          startAt: now(),
+          endAt: now() + 900
+        });
+        state.nextFloatingId += 1;
+      }
+    }
+
+    function playCoinSoundBurst(count) {
+      const repeatCount = Math.max(1, Math.min(count, 6));
+
+      for (let index = 0; index < repeatCount; index += 1) {
+        setTimeout(playCoinSound, index * 82);
+      }
+    }
+
+    function addCoinBurstAt(x, y, count) {
+      const burstCount = Math.min(Math.max(1, count), 18);
+
+      for (let index = 0; index < burstCount; index += 1) {
+        const rowOffset = (index % 6) - 2.5;
+        const column = Math.floor(index / 6);
+        state.floating.push({
+          id: state.nextFloatingId,
+          text: "",
+          x,
+          y,
+          toX: x + rowOffset * 3.8,
+          toY: y - 22 - column * 10 - Math.abs(rowOffset) * 2,
+          kind: "coin-mini",
+          startAt: now(),
+          endAt: now() + 960
+        });
+        state.nextFloatingId += 1;
+      }
+    }
+
+    function addCoinsAt(amount, x, y, label = null) {
+      const reward = Math.max(1, Math.floor(amount));
+      state.coins += reward;
+      state.coinPulseUntil = now() + (reward >= 10 ? 1100 : 760);
+      addFloating(label || `+${reward}`, x, y, "coin");
+      addCoinBurstAt(x, y + 6, reward);
+      playCoinSoundBurst(reward);
+      setTimeout(render, reward >= 10 ? 980 : 620);
+    }
+
+    function addCoinReward(target, amount = 1) {
+      const reward = Math.max(1, Math.floor(amount));
+      state.coins += reward;
+      state.coinPulseUntil = now() + (reward > 1 ? 900 : 480);
+      addFloating(`+${reward}`, target.x, lanes[target.laneIndex] - 29, "coin");
+
+      if (reward > 1) {
+        addCoinBurst(target, reward);
+      }
+
+      playCoinSoundBurst(reward);
+      setTimeout(render, reward > 1 ? 920 : 520);
     }
 
     function spendCoins(cost) {
@@ -2521,6 +3932,121 @@
       state.coinPulseUntil = now() + 480;
       addFloating(`-${cost}`, wallX + 8, 26, "coin-spend");
       return true;
+    }
+
+    function randomInRange([min, max]) {
+      return min + Math.random() * (max - min);
+    }
+
+    function scheduleTreasure(baseTime = now(), delayRange = treasureDelayRangeMs) {
+      state.treasureOpen = false;
+      state.treasureCountingDown = false;
+      state.treasureClaimed = false;
+      state.treasureCountdownStartAt = 0;
+      state.treasureHideAt = 0;
+      state.treasureNextAt = baseTime + randomInRange(delayRange);
+    }
+
+    function closeTreasure() {
+      state.treasureOpen = false;
+      state.treasureCountingDown = false;
+      state.treasureClaimed = false;
+      state.treasureCountdownStartAt = 0;
+      state.treasureHideAt = 0;
+    }
+
+    function startTreasureCountdown(timestamp = now()) {
+      state.treasureOpen = false;
+      state.treasureCountingDown = true;
+      state.treasureClaimed = false;
+      state.treasureCountdownStartAt = timestamp;
+      state.treasureHideAt = 0;
+      state.treasureNextAt = 0;
+      setFeedback("城門が開くまで3");
+    }
+
+    function openTreasure(timestamp = now()) {
+      state.treasureOpen = true;
+      state.treasureCountingDown = false;
+      state.treasureClaimed = false;
+      state.treasureCountdownStartAt = 0;
+      state.treasureHideAt = timestamp + treasureVisibleMs;
+      state.treasureNextAt = 0;
+      setFeedback("城門が開いた");
+    }
+
+    function updateTreasure(timestamp) {
+      if (state.phase !== "playing") {
+        return;
+      }
+
+      if (
+        !state.treasureOpen &&
+        !state.treasureCountingDown &&
+        state.treasureNextAt > 0 &&
+        timestamp >= state.treasureNextAt
+      ) {
+        startTreasureCountdown(timestamp);
+        return;
+      }
+
+      if (state.treasureCountingDown) {
+        if (timestamp - state.treasureCountdownStartAt >= treasureCountdownMs) {
+          openTreasure(timestamp);
+        }
+        return;
+      }
+
+      if (state.treasureOpen && timestamp >= state.treasureHideAt) {
+        closeTreasure();
+        scheduleTreasure(timestamp);
+      }
+    }
+
+    function treasureCountdownValue(timestamp = now()) {
+      if (!state.treasureCountingDown || state.treasureCountdownStartAt <= 0) {
+        return "";
+      }
+
+      const elapsed = clamp(timestamp - state.treasureCountdownStartAt, 0, treasureCountdownMs - 1);
+      return String(Math.max(1, treasureCountdownSeconds - Math.floor(elapsed / 1000)));
+    }
+
+    function drawTreasureReward() {
+      const roll = Math.random();
+
+      if (roll < 0.5) {
+        return 1;
+      }
+
+      if (roll < 0.8) {
+        return 5;
+      }
+
+      if (roll < 0.95) {
+        return 10;
+      }
+
+      return 50;
+    }
+
+    function claimTreasure() {
+      if (
+        state.phase !== "playing" ||
+        !state.treasureOpen ||
+        state.treasureClaimed ||
+        now() >= state.treasureHideAt
+      ) {
+        return;
+      }
+
+      state.treasureClaimed = true;
+      closeTreasure();
+      const reward = drawTreasureReward();
+      addCoinsAt(reward, wallX * 0.5, 79, `+${reward}`);
+      setFeedback(`宝箱から${reward}コイン`);
+      scheduleTreasure(now());
+      render();
     }
 
     function updateBestScore() {
@@ -2537,15 +4063,25 @@
 
       const shouldUseCombo = options.useCombo === true;
       const scoreBase = options.scoreBase ?? 100;
+      const rewardCoins = options.rewardCoins ?? (
+        isBigEnemy(target) ? bigEnemyRewardCoins : (options.rewardCoin ? 1 : 0)
+      );
+      const removeDelay = options.removeDelay ?? 850;
       target.pendingImpact = false;
+      clearEnemyCastleState(target);
       target.hit = true;
-      target.removeAt = now() + 850;
+      target.removeAt = now() + removeDelay;
       clearEnemyTimers(target);
-      animateEnemyPattern(target, 10, false);
+
+      if (isBigEnemy(target)) {
+        completeBigEnemySlots(target);
+      } else {
+        animateEnemyPattern(target, 10, false);
+      }
 
       if (options.text !== "") {
         addFloating(
-          options.text || `${target.value}=10`,
+          options.text || (isBigEnemy(target) ? "大撃破" : `${target.value}=10`),
           target.x,
           lanes[target.laneIndex] - 15,
           options.kind || "ok"
@@ -2556,8 +4092,8 @@
         playDefeatSound();
       }
 
-      if (options.rewardCoin) {
-        addCoinReward(target);
+      if (rewardCoins > 0) {
+        addCoinReward(target, rewardCoins);
       }
 
       if (shouldUseCombo) {
@@ -2583,7 +4119,7 @@
         x: 24 + index * 13 % 78,
         y: -14 - index * 6,
         toX: clamp(target.x + (index % 3 - 1) * 4, wallX + 7, spawnX - 4),
-        toY: lanes[target.laneIndex] - 7 + (index % 2 ? 5 : -5),
+        toY: enemyImpactY(target) + (index % 2 ? 5 : -5),
         kind: "meteor",
         startAt: now(),
         endAt: now() + meteorTravelMs
@@ -2596,7 +4132,7 @@
         id: state.nextFloatingId,
         text: "",
         x: target.x,
-        y: lanes[target.laneIndex] - 12,
+        y: enemyImpactY(target) - 6,
         kind: "snipe-impact",
         startAt: now(),
         endAt: now() + 680
@@ -2627,15 +4163,46 @@
       return state.enemies.filter((enemy) => !enemy.hit);
     }
 
-    function damageCastle(enemy) {
-      if (!enemy || enemy.hit) {
+    function clearEnemyCastleState(enemy) {
+      if (!enemy) {
         return;
       }
 
-      enemy.pendingImpact = false;
-      enemy.hit = true;
-      enemy.removeAt = now() + 520;
+      enemy.atCastle = false;
+      enemy.nextCastleAttackAt = null;
+    }
+
+    function clearEnemyRuntimeState(enemy) {
       clearEnemyTimers(enemy);
+      clearEnemyCastleState(enemy);
+      enemy.pendingImpact = false;
+    }
+
+    function markEnemyAtCastle(enemy, elapsedSeconds = state.elapsed) {
+      if (!enemy || enemy.hit) {
+        return false;
+      }
+
+      enemy.x = castleContactX;
+
+      if (enemy.atCastle) {
+        if (enemy.nextCastleAttackAt === null) {
+          enemy.nextCastleAttackAt = elapsedSeconds + castleAttackIntervalSeconds;
+        }
+
+        return false;
+      }
+
+      enemy.atCastle = true;
+      enemy.nextCastleAttackAt = elapsedSeconds + castleAttackIntervalSeconds;
+      return true;
+    }
+
+    function damageCastle(enemy) {
+      if (state.phase !== "playing" || !enemy || enemy.hit) {
+        return false;
+      }
+
       state.combo = 0;
       state.castleHp = Math.max(0, state.castleHp - 1);
       playMissSound();
@@ -2644,7 +4211,36 @@
 
       if (state.castleHp <= 0) {
         finishGame("over");
+        return false;
       }
+
+      return true;
+    }
+
+    function updateCastleAttack(enemy, elapsedSeconds) {
+      if (!enemy || enemy.hit || !enemy.atCastle) {
+        return true;
+      }
+
+      enemy.x = castleContactX;
+
+      if (enemy.nextCastleAttackAt === null) {
+        enemy.nextCastleAttackAt = elapsedSeconds + castleAttackIntervalSeconds;
+        return true;
+      }
+
+      if (elapsedSeconds < enemy.nextCastleAttackAt) {
+        return true;
+      }
+
+      damageCastle(enemy);
+
+      if (state.phase !== "playing") {
+        return false;
+      }
+
+      enemy.nextCastleAttackAt = elapsedSeconds + castleAttackIntervalSeconds;
+      return true;
     }
 
     function useRepair() {
@@ -2758,7 +4354,7 @@
         shakeBattlefield("is-heavy-shaking", 720);
         targets.forEach((target, index) => {
           if (state.enemies.includes(target)) {
-            addBlast(target.x, lanes[target.laneIndex] - 8, index * 35);
+            addBlast(target.x, enemyImpactY(target), index * 35);
           }
         });
         addBlast(42, 58, 90);
@@ -2766,6 +4362,7 @@
         addFloating("隕石", 58, 28, "wave");
         setFeedback(waveAdvanced ? `ウェーブ${state.wave}開始` : `${defeatedCount}体を隕石で撃破`);
       } else {
+        playMissSound();
         setFeedback("隕石は空振り");
       }
 
@@ -2821,60 +4418,109 @@
       state.message = text;
     }
 
-    function resolveShot(target, value, sum) {
-      if (state.phase === "paused") {
-        scheduleImpact(() => resolveShot(target, value, sum), 80);
-        return;
-      }
-
-      if (state.phase !== "playing" || !state.enemies.includes(target) || !target.pendingImpact) {
-        return;
-      }
-
-      target.pendingImpact = false;
+    function resolveShotMiss(target, value, targetValue, sum) {
+      state.combo = 0;
+      state.misses += 1;
+      playMissSound();
 
       if (sum < 10) {
-        state.combo = 0;
-        state.misses += 1;
-        playMissSound();
         animateEnemyPattern(target, sum, true);
         flashEnemy(target, "is-low");
-        addFloating(`${sum}/10`, target.x, lanes[target.laneIndex] - 15, "low");
-        const notices = applyMissPenalty();
-        if (state.phase !== "playing") {
-          render();
-          return;
-        }
-        setFeedback(withPenaltyMessage(`${target.value}と${value}で${sum}。まだ足りない`, notices));
+        addFloating(`${sum}/10`, target.x, enemyFloatingY(target), "low");
+      } else {
+        animateEnemyPattern(target, 10, true);
+        flashEnemy(target, "is-over");
+        addSpillBalls(target, sum - 10);
+        addFloating(`${sum}`, target.x, enemyFloatingY(target), "over");
+      }
+
+      const notices = applyMissPenalty();
+
+      if (state.phase !== "playing") {
         render();
         return;
       }
 
-      if (sum > 10) {
-        state.combo = 0;
-        state.misses += 1;
-        playMissSound();
-        animateEnemyPattern(target, 10, true);
-        flashEnemy(target, "is-over");
-        addSpillBalls(target, sum - 10);
-        addFloating(`${sum}`, target.x, lanes[target.laneIndex] - 15, "over");
-        const notices = applyMissPenalty();
-        if (state.phase !== "playing") {
-          render();
-          return;
-        }
-        setFeedback(withPenaltyMessage(`${target.value}と${value}で${sum}。多すぎて弾かれた`, notices));
+      setFeedback(withPenaltyMessage(
+        `${targetValue}と${value}で${sum}。${sum < 10 ? "まだ足りない" : "多すぎて弾かれた"}`,
+        notices
+      ));
+      render();
+    }
+
+    function resolveBigEnemyShot(target, value, targetValue, sum, options = {}) {
+      target.pendingImpact = false;
+      const slotIndex = currentBigSlotIndex(target);
+
+      if (slotIndex < 0) {
+        render();
+        return;
+      }
+
+      if (sum !== 10) {
+        resolveShotMiss(target, value, targetValue, sum);
+        return;
+      }
+
+      fillBigEnemySlot(target, slotIndex);
+      playBigEnemyHitSound();
+      addFloating(`${targetValue}+${value}=10`, target.x, enemyFloatingY(target, slotIndex), "ok");
+
+      if (!isBigEnemyComplete(target)) {
+        setFeedback(`大きな敵 ${slotIndex + 1}段目クリア。次は${currentEnemyValue(target)}`);
         render();
         return;
       }
 
       const result = defeatEnemy(target, {
-        text: `${target.value}+${value}=10`,
-        rewardCoin: true,
-        useCombo: true
+        text: "大撃破",
+        kind: "ok",
+        rewardCoins: bigEnemyRewardCoins,
+        useCombo: true,
+        scoreBase: 260,
+        removeDelay: options.removeDelay
       });
 
-      setFeedback(result.waveAdvanced ? `ウェーブ${state.wave}開始` : `${target.value}と${value}で10`);
+      setFeedback(
+        result.waveAdvanced ? `ウェーブ${state.wave}開始` : `大きな敵を撃破 +${bigEnemyRewardCoins}コイン`
+      );
+
+      if (result.cleared) {
+        finishGame("clear");
+        return;
+      }
+
+      render();
+    }
+
+    function resolveShot(target, value, options = {}) {
+      if (state.phase !== "playing" || !state.enemies.includes(target) || target.hit) {
+        return;
+      }
+
+      const targetValue = currentEnemyValue(target);
+      const sum = targetValue + value;
+
+      if (isBigEnemy(target)) {
+        resolveBigEnemyShot(target, value, targetValue, sum, options);
+        return;
+      }
+
+      target.pendingImpact = false;
+
+      if (sum !== 10) {
+        resolveShotMiss(target, value, targetValue, sum);
+        return;
+      }
+
+      const result = defeatEnemy(target, {
+        text: `${targetValue}+${value}=10`,
+        rewardCoin: true,
+        useCombo: true,
+        removeDelay: options.removeDelay
+      });
+
+      setFeedback(result.waveAdvanced ? `ウェーブ${state.wave}開始` : `${targetValue}と${value}で10`);
 
       if (result.cleared) {
         finishGame("clear");
@@ -2885,7 +4531,7 @@
     }
 
     function shoot(value) {
-      if (state.phase === "ready") {
+      if (state.phase === "ready" || state.phase === "waveClear") {
         startGame();
       }
 
@@ -2893,11 +4539,17 @@
         return;
       }
 
+      const target = attackTarget();
+
+      if (target && target.pendingImpact) {
+        setFeedback("大きな攻撃が着弾中");
+        render();
+        return;
+      }
+
       state.lastButtonValue = value;
       state.activeButtonUntil = now() + 150;
       playShotSound(value);
-
-      const target = closestEnemy();
 
       if (!target) {
         state.combo = 0;
@@ -2915,15 +4567,14 @@
       }
 
       addArrow(target, value);
-      const sum = target.value + value;
-      target.pendingImpact = true;
-      setFeedback(`${value}の玉が向かっている`);
-      scheduleImpact(() => resolveShot(target, value, sum), impactDelay(value));
-      render();
+      resolveShot(target, value, {
+        removeDelay: Math.max(850, impactDelay(value) + 260)
+      });
     }
 
     function startGame() {
       cancelAnimationFrame(state.frameId);
+      state.frameId = null;
 
       if (state.phase === "waveClear") {
         startNextWave();
@@ -2935,6 +4586,7 @@
       state.lastSpawnAt = now();
       state.spawnHoldUntil = 0;
       state.settleUntil = 0;
+      scheduleTreasure(now(), treasureFirstDelayRangeMs);
 
       if (state.enemies.length === 0) {
         spawnEnemy();
@@ -2949,6 +4601,7 @@
       if (state.phase === "playing") {
         state.phase = "paused";
         cancelAnimationFrame(state.frameId);
+        state.frameId = null;
         render();
         return;
       }
@@ -2963,8 +4616,9 @@
 
     function resetGame() {
       cancelAnimationFrame(state.frameId);
+      state.frameId = null;
       clearImpactTimers();
-      state.enemies.forEach(clearEnemyTimers);
+      state.enemies.forEach(clearEnemyRuntimeState);
       state.phase = "ready";
       state.message = "準備完了";
       state.coins = 0;
@@ -2980,11 +4634,14 @@
       state.nextFloatingId = 1;
       state.lastFrameAt = 0;
       state.lastSpawnAt = 0;
+      state.spawnsSinceBigEnemy = 0;
       state.spawnHoldUntil = 0;
       state.settleUntil = 0;
       state.lastButtonValue = null;
       state.activeButtonUntil = 0;
       state.coinPulseUntil = 0;
+      closeTreasure();
+      state.treasureNextAt = 0;
       clearFieldObjects();
       setFeedback("準備完了");
       render();
@@ -2998,12 +4655,13 @@
 
     function clearFieldObjects() {
       clearImpactTimers();
-      state.enemies.forEach(clearEnemyTimers);
+      state.enemies.forEach(clearEnemyRuntimeState);
       state.enemies = [];
       state.arrows = [];
       state.floating = [];
       state.impactTimers = [];
       state.meteorPending = false;
+      closeTreasure();
       enemyElements.forEach((element) => element.remove());
       arrowElements.forEach((element) => element.remove());
       floatingElements.forEach((element) => element.remove());
@@ -3034,16 +4692,16 @@
     function finishGame(result) {
       state.phase = result;
       cancelAnimationFrame(state.frameId);
+      state.frameId = null;
       clearImpactTimers();
       state.meteorPending = false;
       state.spawnHoldUntil = 0;
+      closeTreasure();
+      state.treasureNextAt = 0;
       state.settleUntil = now() + 1400;
       const fallbackRemoveAt = now() + 500;
       state.enemies.forEach((enemy) => {
-        if (result !== "clear") {
-          clearEnemyTimers(enemy);
-        }
-
+        clearEnemyRuntimeState(enemy);
         enemy.hit = true;
 
         if (!enemy.removeAt || enemy.removeAt < fallbackRemoveAt) {
@@ -3058,10 +4716,13 @@
     function completeWave() {
       state.elapsed = waveDurationSeconds;
       cancelAnimationFrame(state.frameId);
+      state.frameId = null;
       clearFieldObjects();
       state.spawnHoldUntil = 0;
       state.lastButtonValue = null;
       state.activeButtonUntil = 0;
+      closeTreasure();
+      state.treasureNextAt = 0;
       state.phase = "waveClear";
       setFeedback(`${currentWaveLabel()}突破`);
       playWaveFanfare();
@@ -3069,6 +4730,8 @@
     }
 
     function startNextWave() {
+      cancelAnimationFrame(state.frameId);
+      state.frameId = null;
       clearFieldObjects();
       state.wave += 1;
       state.elapsed = 0;
@@ -3078,6 +4741,7 @@
       state.lastSpawnAt = now();
       state.spawnHoldUntil = 0;
       state.settleUntil = 0;
+      scheduleTreasure(now(), treasureFirstDelayRangeMs);
       state.phase = "playing";
       setFeedback(`${currentWaveLabel()}開始`);
       playWaveFanfare();
@@ -3096,12 +4760,7 @@
       state.elapsed += delta;
 
       if (state.elapsed >= waveDurationSeconds) {
-        if (state.wave >= totalWaves) {
-          state.elapsed = waveDurationSeconds;
-          finishGame("clear");
-        } else {
-          completeWave();
-        }
+        completeWave();
         return;
       }
 
@@ -3110,17 +4769,25 @@
         state.lastSpawnAt = timestamp;
       }
 
+      updateTreasure(timestamp);
+
       state.enemies.forEach((enemy) => {
-        if (!enemy.hit) {
-          enemy.x -= enemy.speed * delta;
+        if (!enemy.hit && !enemy.atCastle) {
+          enemy.x = Math.max(castleContactX, enemy.x - enemy.speed * delta);
         }
       });
 
       state.enemies.forEach((enemy) => {
-        if (!enemy.hit && enemy.x <= wallX + 2) {
-          damageCastle(enemy);
+        if (!enemy.hit && enemy.x <= castleContactX) {
+          markEnemyAtCastle(enemy, state.elapsed);
         }
       });
+
+      for (const enemy of state.enemies) {
+        if (!updateCastleAttack(enemy, state.elapsed)) {
+          return;
+        }
+      }
 
       if (state.phase !== "playing") {
         return;
@@ -3142,8 +4809,12 @@
         element.style.top = `${lanes[enemy.laneIndex]}%`;
         element.style.zIndex = String(Math.round((spawnX - enemy.x) * 100) + enemy.laneIndex);
         element.classList.toggle("is-hit", enemy.hit);
+        element.classList.toggle("is-at-castle", enemy.atCastle && !enemy.hit);
+        element.classList.toggle("is-big", isBigEnemy(enemy));
 
-        if (element.countPattern && element.countPattern.dataset.value !== String(enemy.visualValue)) {
+        if (isBigEnemy(enemy)) {
+          syncBigEnemyElement(enemy, element);
+        } else if (element.countPattern && element.countPattern.dataset.value !== String(enemy.visualValue)) {
           setPatternValue(element.countPattern, enemy.visualValue);
         }
       });
@@ -3205,6 +4876,64 @@
       });
     }
 
+    function ensureTargetHudPattern() {
+      if (!refs.targetHudPattern) {
+        return null;
+      }
+
+      if (!refs.targetHudPattern.countPattern) {
+        const pattern = createCountPattern(0, "target-pattern", "front");
+        refs.targetHudPattern.countPattern = pattern;
+        refs.targetHudPattern.append(pattern);
+      }
+
+      return refs.targetHudPattern.countPattern;
+    }
+
+    function renderTargetHud() {
+      if (
+        !refs.targetHud ||
+        !refs.targetHudLabel ||
+        !refs.targetHudNumber ||
+        !refs.targetHudPattern ||
+        !refs.targetHudProgress
+      ) {
+        return;
+      }
+
+      const target = featuredEnemy();
+      const pattern = ensureTargetHudPattern();
+
+      if (!target) {
+        refs.targetHud.classList.add("is-empty");
+        refs.targetHud.classList.remove("is-big-target");
+        refs.targetHud.setAttribute("aria-hidden", "true");
+        refs.targetHud.setAttribute("aria-label", "今の相手なし");
+        refs.targetHudLabel.textContent = "今の相手";
+        refs.targetHudNumber.textContent = "-";
+        refs.targetHudProgress.textContent = "";
+
+        if (pattern && pattern.dataset.value !== "0") {
+          setPatternValue(pattern, 0);
+        }
+
+        return;
+      }
+
+      const info = targetDisplayInfo(target);
+      refs.targetHud.classList.remove("is-empty");
+      refs.targetHud.classList.toggle("is-big-target", isBigEnemy(target));
+      refs.targetHud.setAttribute("aria-hidden", "false");
+      refs.targetHud.setAttribute("aria-label", info.aria);
+      refs.targetHudLabel.textContent = info.label;
+      refs.targetHudNumber.textContent = String(info.value);
+      refs.targetHudProgress.textContent = info.progress;
+
+      if (pattern && pattern.dataset.value !== String(info.value)) {
+        setPatternValue(pattern, info.value);
+      }
+    }
+
     function renderButtons() {
       refs.numberGrid.querySelectorAll(".number-button").forEach((button, index) => {
         const value = attackBaseValues[index];
@@ -3228,7 +4957,9 @@
         );
       });
 
-      const hasSnipeTarget = Boolean(closestEnemy());
+      const targetForActions = attackTarget();
+      const isTargetLocked = Boolean(targetForActions && targetForActions.pendingImpact);
+      const hasSnipeTarget = Boolean(targetForActions && !isTargetLocked);
       const hasMeteorTarget = activeEnemies().length > 0 && !state.meteorPending;
       const canRepair = state.castleHp < maxCastleHp;
 
@@ -3312,12 +5043,40 @@
       }
     }
 
+    function renderTreasure() {
+      if (!refs.castleWall || !refs.treasureChest) {
+        return;
+      }
+
+      const canClaim =
+        state.phase === "playing" &&
+        state.treasureOpen &&
+        !state.treasureClaimed &&
+        now() < state.treasureHideAt;
+      const isCountingDown =
+        state.phase === "playing" &&
+        state.treasureCountingDown &&
+        state.treasureCountdownStartAt > 0;
+      refs.castleWall.classList.toggle("is-treasure-open", canClaim);
+      refs.castleWall.classList.toggle("is-treasure-countdown", isCountingDown);
+      refs.treasureChest.disabled = !canClaim;
+      refs.treasureChest.setAttribute("aria-hidden", canClaim ? "false" : "true");
+      refs.treasureChest.tabIndex = canClaim ? 0 : -1;
+
+      if (refs.treasureCountdown) {
+        refs.treasureCountdown.textContent = treasureCountdownValue();
+        refs.treasureCountdown.setAttribute("aria-hidden", isCountingDown ? "false" : "true");
+      }
+    }
+
     function render(timestamp = now()) {
       renderEnemies();
       renderArrows(timestamp);
       renderFloating(timestamp);
+      renderTargetHud();
       renderButtons();
       renderStatus();
+      renderTreasure();
     }
 
     function buildButtons() {
@@ -3371,12 +5130,19 @@
     refs.startButton.addEventListener("click", startGame);
     refs.pauseButton.addEventListener("click", pauseGame);
     refs.resetButton.addEventListener("click", resetGame);
+    refs.treasureChest.addEventListener("click", claimTreasure);
     window.addEventListener("pointerdown", primeCoinSound, { once: true });
     window.addEventListener("keydown", primeCoinSound, { once: true });
+    window.addEventListener("click", primeCoinSound, { once: true });
     window.addEventListener("pointerdown", primeMissSound, { once: true });
     window.addEventListener("keydown", primeMissSound, { once: true });
+    window.addEventListener("click", primeMissSound, { once: true });
+    window.addEventListener("pointerdown", primeBigHitSound, { once: true });
+    window.addEventListener("keydown", primeBigHitSound, { once: true });
+    window.addEventListener("click", primeBigHitSound, { once: true });
     window.addEventListener("pointerdown", primeSynthSound, { once: true });
     window.addEventListener("keydown", primeSynthSound, { once: true });
+    window.addEventListener("click", primeSynthSound, { once: true });
 
     window.addEventListener("keydown", (event) => {
       if (event.key >= "1" && event.key <= "9") {
