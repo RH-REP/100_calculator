@@ -1,0 +1,3391 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10の城壁 - ゲーム4</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #263238;
+      --soft-ink: #52636a;
+      --paper: #fffaf0;
+      --panel: #fffdf7;
+      --line: #2d4640;
+      --green: #4f9d69;
+      --green-deep: #236247;
+      --mint: #dff5dc;
+      --sky: #dff3fb;
+      --wood: #b86b3e;
+      --wood-dark: #704229;
+      --stone: #87949c;
+      --stone-dark: #5f6b72;
+      --gold: #f0c34e;
+      --warning: #d75555;
+      --violet: #7767a8;
+      --shadow: rgba(20, 40, 34, 0.18);
+      --focus: rgba(38, 95, 189, 0.34);
+      --radius: 8px;
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #ecf8f0 0%, #f8f4e6 48%, #f0e9d5 100%);
+      letter-spacing: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page-links {
+      display: inline-flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 100%;
+    }
+
+    .page-jump {
+      min-height: 44px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.94);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      box-shadow: 0 5px 0 var(--shadow);
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .page-jump:hover {
+      background: #ffffff;
+    }
+
+    .page-jump:focus-visible,
+    .deploy-button:focus-visible,
+    .number-button:focus-visible,
+    .special-button:focus-visible,
+    .panel-icon-button:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .game-shell {
+      width: min(1280px, 100%);
+      min-height: calc(100vh - 40px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    .app-header,
+    .control-bar,
+    .battle-shell,
+    .number-panel,
+    .status-card {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 8px 0 var(--shadow);
+    }
+
+    .app-header {
+      min-height: 86px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 auto;
+      position: relative;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background:
+        repeating-linear-gradient(90deg, #97a3a8 0 18px, #748188 18px 22px);
+      box-shadow: inset 0 -9px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      left: -3px;
+      right: -3px;
+      top: -14px;
+      height: 18px;
+      border: 3px solid var(--line);
+      background:
+        linear-gradient(90deg, var(--stone-dark) 0 18%, transparent 18% 31%, var(--stone-dark) 31% 49%, transparent 49% 62%, var(--stone-dark) 62% 80%, transparent 80%);
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 21px;
+      bottom: 0;
+      width: 16px;
+      height: 24px;
+      border: 3px solid var(--line);
+      border-bottom: 0;
+      border-radius: 9px 9px 0 0;
+      background: #5c4030;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+      line-height: 1.08;
+    }
+
+    .brand-text p {
+      margin: 5px 0 0;
+      color: var(--soft-ink);
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: #f4ecd3;
+      font-weight: 900;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .badge.alt {
+      background: var(--sky);
+    }
+
+    .badge.warn {
+      background: #ffe8bd;
+    }
+
+    .badge.coin-badge {
+      background: #fff3b7;
+      transition: transform 140ms ease, background 140ms ease;
+    }
+
+    .badge.coin-badge.is-pulsing {
+      background: var(--gold);
+      transform: translateY(2px) scale(1.04);
+    }
+
+    .game-area {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .battle-shell {
+      min-width: 0;
+      padding: 12px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .battle-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .status-card {
+      min-height: 64px;
+      padding: 10px;
+      box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .status-card.mission-card {
+      display: grid;
+      align-content: center;
+    }
+
+    .status-label {
+      margin: 0 0 6px;
+      color: var(--soft-ink);
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .status-value {
+      margin: 0;
+      font-size: clamp(1.28rem, 2vw, 1.72rem);
+      line-height: 1.12;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meter {
+      height: 18px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff;
+      margin-top: 9px;
+    }
+
+    .meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--green);
+      transition: width 160ms ease;
+    }
+
+    .meter.danger span {
+      background: var(--warning);
+    }
+
+    .meter.health span {
+      background: var(--green);
+    }
+
+    .meter.time-low span {
+      background: var(--warning);
+    }
+
+    .castle-health-hud {
+      position: absolute;
+      z-index: 14;
+      left: 12px;
+      top: 54px;
+      width: min(132px, calc(var(--wall-x) - 22px));
+      min-width: 86px;
+      padding: 6px 7px 7px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.9);
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .castle-health-hud .status-label {
+      margin-bottom: 4px;
+      font-size: 0.72rem;
+    }
+
+    .castle-health-hud .status-value {
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .castle-health-hud .meter {
+      height: 14px;
+      margin-top: 6px;
+    }
+
+    .battlefield {
+      --wall-x: 18%;
+      position: relative;
+      min-height: 480px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, #cfeefa 0 44%, #bcdba3 44% 100%);
+      isolation: isolate;
+    }
+
+    .battlefield.is-shaking {
+      animation: battlefieldShake 420ms ease;
+    }
+
+    .battlefield.is-heavy-shaking {
+      animation: battlefieldHeavyShake 720ms ease;
+    }
+
+    .cloud-bank {
+      position: absolute;
+      inset: 18px 22px auto 19%;
+      height: 54px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.72) 0 18%, transparent 18% 23%, rgba(255, 255, 255, 0.72) 23% 39%, transparent 39% 48%, rgba(255, 255, 255, 0.72) 48% 62%, transparent 62%);
+      border-radius: 7px;
+      opacity: 0.66;
+      pointer-events: none;
+    }
+
+    .far-hills {
+      position: absolute;
+      left: 12%;
+      right: -6%;
+      top: 110px;
+      height: 150px;
+      background:
+        linear-gradient(135deg, transparent 0 32%, #8ebc73 32% 52%, transparent 52%),
+        linear-gradient(225deg, transparent 0 38%, #7daf6d 38% 58%, transparent 58%);
+      opacity: 0.72;
+      pointer-events: none;
+    }
+
+    .field-grid {
+      position: absolute;
+      inset: 40% 0 0 var(--wall-x);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px) 0 0 / 70px 70px,
+        linear-gradient(0deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px) 0 0 / 70px 70px;
+      pointer-events: none;
+    }
+
+    .lane {
+      position: absolute;
+      left: var(--wall-x);
+      right: 0;
+      height: 18px;
+      border-top: 3px solid rgba(45, 70, 64, 0.32);
+      background: rgba(255, 253, 247, 0.24);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .lane.one {
+      top: 40%;
+    }
+
+    .lane.two {
+      top: 53%;
+    }
+
+    .lane.three {
+      top: 66%;
+    }
+
+    .lane.four {
+      top: 79%;
+    }
+
+    .castle-wall {
+      position: absolute;
+      z-index: 6;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--wall-x);
+      border-right: 3px solid var(--line);
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0 34px, rgba(0, 0, 0, 0.08) 34px 38px),
+        repeating-linear-gradient(90deg, #9ca8ac 0 38px, #7f8d93 38px 43px);
+      box-shadow: inset -12px 0 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .castle-wall::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: -3px;
+      top: 0;
+      height: 48px;
+      border-bottom: 3px solid var(--line);
+      background:
+        linear-gradient(90deg, var(--stone-dark) 0 17%, transparent 17% 29%, var(--stone-dark) 29% 46%, transparent 46% 58%, var(--stone-dark) 58% 75%, transparent 75% 87%, var(--stone-dark) 87%);
+    }
+
+    .castle-gate {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: min(76px, 62%);
+      height: 120px;
+      border: 3px solid var(--line);
+      border-bottom: 0;
+      border-radius: 40px 40px 0 0;
+      background:
+        repeating-linear-gradient(90deg, #68452d 0 18px, #5a3926 18px 22px);
+      transform: translateX(-50%);
+      box-shadow: inset 0 10px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .soldier {
+      position: absolute;
+      z-index: 8;
+      left: 52%;
+      width: 38px;
+      height: 48px;
+      transform: translateX(-50%);
+    }
+
+    .soldier.one {
+      top: 29%;
+    }
+
+    .soldier.two {
+      top: 42%;
+    }
+
+    .soldier.three {
+      top: 55%;
+    }
+
+    .soldier.four {
+      top: 68%;
+    }
+
+    .soldier::before {
+      content: "";
+      position: absolute;
+      left: 9px;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--line);
+      border-radius: 50% 50% 7px 7px;
+      background: #f0bf8e;
+    }
+
+    .soldier::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      bottom: 0;
+      width: 28px;
+      height: 27px;
+      border: 3px solid var(--line);
+      border-radius: 8px 8px 4px 4px;
+      background: #6b8fd6;
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .bow {
+      position: absolute;
+      z-index: 9;
+      right: -17px;
+      top: 18px;
+      width: 19px;
+      height: 34px;
+      border: 3px solid var(--wood-dark);
+      border-left: 0;
+      border-radius: 0 20px 20px 0;
+    }
+
+    .enemy-layer,
+    .arrow-layer,
+    .floating-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .enemy-layer {
+      z-index: 5;
+    }
+
+    .arrow-layer {
+      z-index: 9;
+    }
+
+    .floating-layer {
+      z-index: 12;
+    }
+
+    .enemy {
+      position: absolute;
+      width: 82px;
+      height: 96px;
+      left: 100%;
+      top: 50%;
+      transform: translate(-50%, -64%);
+      filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.14));
+      transition: filter 120ms ease;
+    }
+
+    .enemy.is-hit {
+      animation: enemyDefeat 780ms ease forwards;
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.08));
+    }
+
+    .enemy.is-low {
+      animation: enemyLow 440ms ease;
+    }
+
+    .enemy.is-over {
+      animation: enemyOver 500ms ease;
+    }
+
+    .enemy-body {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 7px;
+      height: 66px;
+      border: 3px solid var(--line);
+      border-radius: 18px 18px 9px 9px;
+      background: #d8835c;
+      box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .enemy-body::before,
+    .enemy-body::after {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      width: 16px;
+      height: 14px;
+      border: 3px solid var(--line);
+      border-top: 0;
+      border-radius: 0 0 7px 7px;
+      background: var(--wood-dark);
+    }
+
+    .enemy-body::before {
+      left: 8px;
+    }
+
+    .enemy-body::after {
+      right: 8px;
+    }
+
+    .enemy-head {
+      position: absolute;
+      left: 20px;
+      top: 0;
+      width: 34px;
+      height: 30px;
+      border: 3px solid var(--line);
+      border-radius: 14px 14px 8px 8px;
+      background: #bfc8cc;
+    }
+
+    .enemy-number {
+      position: absolute;
+      left: 50%;
+      top: 29px;
+      min-width: 42px;
+      min-height: 32px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background: #fff3b7;
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      transform: translateX(-50%);
+    }
+
+    .count-pattern {
+      --dot-size: 8px;
+      display: grid;
+      grid-template-columns: repeat(5, var(--dot-size));
+      grid-template-rows: repeat(2, var(--dot-size));
+      gap: 3px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .count-dot {
+      width: var(--dot-size);
+      height: var(--dot-size);
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: #ffffff;
+      transition: background 130ms ease, border-color 130ms ease, transform 130ms ease, opacity 130ms ease;
+    }
+
+    .count-dot.is-filled {
+      background:
+        radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.78) 0 18%, transparent 38%),
+        var(--gold);
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.14);
+      transform: scale(1.06);
+    }
+
+    .count-dot.is-empty {
+      border-style: dashed;
+      opacity: 0.44;
+    }
+
+    .enemy-pattern {
+      --dot-size: 6px;
+      position: absolute;
+      left: 50%;
+      top: 63px;
+      padding: 4px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateX(-50%);
+    }
+
+    .shot-burst {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      transform-origin: 50% 50%;
+    }
+
+    .shot-dot,
+    .spill-dot {
+      width: 11px;
+      height: 11px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.82) 0 14%, transparent 34%),
+        var(--gold);
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+      flex: 0 0 auto;
+    }
+
+    .shot-zero {
+      min-width: 22px;
+      min-height: 22px;
+      display: grid;
+      place-items: center;
+      border: 2px dashed var(--line);
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--soft-ink);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .floating-text {
+      position: absolute;
+      min-width: 64px;
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 4px 8px;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background: #e3f5d7;
+      font-weight: 900;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .floating-text.miss {
+      background: #ffe8bd;
+    }
+
+    .floating-text.low {
+      background: #fff3b7;
+    }
+
+    .floating-text.over {
+      background: #ffd9d6;
+    }
+
+    .floating-text.ok {
+      background: #e3f5d7;
+    }
+
+    .floating-text.coin {
+      min-width: 48px;
+      min-height: 48px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.82) 0 12%, transparent 32%),
+        var(--gold);
+      color: #3e3120;
+      box-shadow:
+        inset 0 -6px 0 rgba(0, 0, 0, 0.15),
+        0 6px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .floating-text.coin-spend {
+      min-width: 48px;
+      min-height: 40px;
+      background: #ffe8bd;
+      color: #704229;
+    }
+
+    .floating-text.wave {
+      min-width: 110px;
+      background: #fff3b7;
+      color: #3e3120;
+    }
+
+    .floating-text.meteor {
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .meteor-rock {
+      width: 30px;
+      height: 30px;
+      display: block;
+      border: 3px solid var(--line);
+      border-radius: 50% 44% 55% 42%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.75) 0 11%, transparent 30%),
+        #6b4b43;
+      box-shadow:
+        -16px -13px 0 -6px var(--gold),
+        -25px -22px 0 -10px #f2a15f,
+        inset 0 -6px 0 rgba(0, 0, 0, 0.24);
+      transform: rotate(-28deg);
+    }
+
+    .floating-text.snipe-impact,
+    .floating-text.blast {
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .snipe-impact-mark {
+      width: 84px;
+      height: 84px;
+      display: block;
+      position: relative;
+      border: 4px solid var(--warning);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(240, 195, 78, 0.92) 0 13%, rgba(215, 85, 85, 0.62) 14% 24%, transparent 25%),
+        conic-gradient(from 0deg, transparent 0 12%, rgba(215, 85, 85, 0.78) 12% 15%, transparent 15% 35%, rgba(215, 85, 85, 0.78) 35% 38%, transparent 38% 62%, rgba(215, 85, 85, 0.78) 62% 65%, transparent 65% 85%, rgba(215, 85, 85, 0.78) 85% 88%, transparent 88%);
+      animation: snipeImpact 620ms ease-out forwards;
+    }
+
+    .snipe-impact-mark::before,
+    .snipe-impact-mark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: var(--warning);
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+
+    .snipe-impact-mark::before {
+      width: 96px;
+      height: 5px;
+    }
+
+    .snipe-impact-mark::after {
+      width: 5px;
+      height: 96px;
+    }
+
+    .blast-mark {
+      width: 108px;
+      height: 108px;
+      display: block;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(255, 250, 240, 0.95) 0 12%, var(--gold) 13% 26%, rgba(215, 85, 85, 0.88) 27% 42%, transparent 43%),
+        conic-gradient(from 12deg, rgba(255, 232, 189, 0.9) 0 8%, transparent 8% 14%, rgba(242, 161, 95, 0.9) 14% 24%, transparent 24% 38%, rgba(255, 232, 189, 0.9) 38% 48%, transparent 48% 62%, rgba(242, 161, 95, 0.9) 62% 76%, transparent 76% 86%, rgba(255, 232, 189, 0.9) 86% 100%);
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.16));
+      animation: blastImpact 720ms ease-out forwards;
+    }
+
+    .floating-text.spill {
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .number-panel {
+      min-width: 0;
+      padding: 12px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      justify-items: center;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .panel-actions {
+      width: 196px;
+      max-width: 100%;
+      display: grid;
+      grid-template-columns: 72px 52px 52px;
+      gap: 10px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .deploy-button {
+      width: 72px;
+      min-height: 72px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--green);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 5px 0 var(--shadow);
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    }
+
+    .deploy-button:hover {
+      background: var(--green-deep);
+    }
+
+    .deploy-button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--shadow);
+    }
+
+    .deploy-button:disabled {
+      cursor: default;
+      opacity: 0.68;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .deploy-icon {
+      width: 48px;
+      height: 48px;
+      display: block;
+      position: relative;
+    }
+
+    .deploy-icon::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 5px;
+      width: 24px;
+      height: 38px;
+      border: 5px solid #fffdf7;
+      border-left: 0;
+      border-radius: 0 30px 30px 0;
+    }
+
+    .deploy-icon::after {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 6px;
+      width: 4px;
+      height: 38px;
+      border-radius: 3px;
+      background: #fffdf7;
+    }
+
+    .panel-icon-button {
+      width: 52px;
+      min-height: 72px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 5px 0 var(--shadow);
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    }
+
+    .panel-icon-button:hover {
+      background: var(--mint);
+    }
+
+    .panel-icon-button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--shadow);
+    }
+
+    .panel-icon-button:disabled {
+      cursor: default;
+      opacity: 0.48;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .pause-icon,
+    .reset-icon {
+      width: 30px;
+      height: 30px;
+      display: block;
+      position: relative;
+    }
+
+    .pause-icon::before,
+    .pause-icon::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      width: 8px;
+      height: 22px;
+      border-radius: 2px;
+      background: var(--line);
+    }
+
+    .pause-icon::before {
+      left: 6px;
+    }
+
+    .pause-icon::after {
+      right: 6px;
+    }
+
+    .panel-icon-button[data-mode="resume"] .pause-icon::before {
+      left: 8px;
+      top: 3px;
+      width: 0;
+      height: 0;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-left: 18px solid var(--green-deep);
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .panel-icon-button[data-mode="resume"] .pause-icon::after {
+      display: none;
+    }
+
+    .reset-icon::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 4px;
+      width: 21px;
+      height: 21px;
+      border: 4px solid var(--line);
+      border-left-color: transparent;
+      border-radius: 50%;
+      transform: rotate(-28deg);
+    }
+
+    .reset-icon::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 3px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 11px solid var(--line);
+      transform: rotate(-16deg);
+    }
+
+    .number-grid {
+      width: 146px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      align-content: start;
+      justify-self: center;
+    }
+
+    .number-button {
+      width: 146px;
+      min-width: 146px;
+      min-height: 50px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 34px auto;
+      align-items: center;
+      justify-content: start;
+      justify-items: start;
+      gap: 3px;
+      padding: 6px 8px;
+      box-shadow: 0 5px 0 var(--shadow);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .button-number {
+      font-size: 1.36rem;
+      line-height: 1;
+      justify-self: center;
+    }
+
+    .button-pattern {
+      --dot-size: 6px;
+      justify-self: start;
+      padding: 3px 4px;
+      border: 2px solid rgba(45, 70, 64, 0.6);
+      border-radius: 7px;
+      background: rgba(255, 250, 240, 0.82);
+    }
+
+    .number-button:hover {
+      background: var(--mint);
+    }
+
+    .number-button:active,
+    .number-button.is-active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--shadow);
+      background: var(--green);
+      color: #ffffff;
+    }
+
+    .special-button {
+      width: 146px;
+      min-width: 146px;
+      min-height: 56px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff3b7;
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      grid-template-rows: auto auto;
+      align-items: center;
+      column-gap: 7px;
+      padding: 6px 8px;
+      box-shadow: 0 5px 0 var(--shadow);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    }
+
+    .special-button.meteor {
+      background: #ffd9d6;
+    }
+
+    .special-button:hover {
+      background: var(--mint);
+    }
+
+    .special-button:active,
+    .special-button.is-active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--shadow);
+    }
+
+    .special-button:disabled {
+      cursor: default;
+      opacity: 0.46;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .special-icon {
+      grid-row: 1 / 3;
+      width: 28px;
+      height: 28px;
+      display: block;
+      position: relative;
+      justify-self: center;
+    }
+
+    .special-icon.snipe::before,
+    .special-icon.snipe::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: var(--line);
+    }
+
+    .special-icon.snipe::before {
+      left: 4px;
+      right: 4px;
+      top: 12px;
+      height: 4px;
+      box-shadow: 0 0 0 3px #fffaf0;
+    }
+
+    .special-icon.snipe::after {
+      top: 4px;
+      bottom: 4px;
+      left: 12px;
+      width: 4px;
+    }
+
+    .special-icon.meteor::before {
+      content: "";
+      position: absolute;
+      right: 3px;
+      bottom: 2px;
+      width: 16px;
+      height: 16px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: #6b4b43;
+    }
+
+    .special-icon.meteor::after {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: 1px;
+      width: 23px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--gold);
+      transform: rotate(-35deg);
+    }
+
+    .special-icon.repair::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 15px;
+      width: 20px;
+      height: 9px;
+      border: 3px solid var(--line);
+      border-radius: 4px;
+      background: #9ca8ac;
+      transform: rotate(-42deg);
+    }
+
+    .special-icon.repair::after {
+      content: "";
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 12px;
+      height: 12px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: #fffaf0;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .special-label {
+      font-size: 0.86rem;
+      line-height: 1.05;
+    }
+
+    .special-cost {
+      color: var(--soft-ink);
+      font-size: 0.72rem;
+      line-height: 1.05;
+    }
+
+    .control-bar {
+      min-height: 72px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .phase-text {
+      color: var(--soft-ink);
+      font-weight: 900;
+    }
+
+    @media (max-width: 1080px) {
+      body {
+        padding: 10px;
+      }
+
+      .page-links {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: none;
+      }
+
+      .page-jump {
+        width: 100%;
+      }
+
+      .game-shell {
+        min-height: calc(100vh - 20px);
+      }
+
+      .app-header {
+        grid-template-columns: 1fr;
+        padding-right: 18px;
+      }
+
+      .status-strip {
+        justify-content: flex-start;
+      }
+
+      .game-area {
+        grid-template-columns: 1fr;
+      }
+
+      .number-panel {
+        grid-template-columns: auto minmax(146px, 1fr);
+        grid-template-rows: auto;
+        justify-items: start;
+      }
+
+      .panel-actions {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .number-grid {
+        grid-column: 2;
+        grid-row: 1;
+        width: 146px;
+        grid-template-columns: 1fr;
+        align-content: start;
+        justify-self: start;
+      }
+
+      .control-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page-links {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .battle-header,
+      .number-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .number-grid {
+        grid-column: auto;
+        grid-row: auto;
+        grid-template-columns: 1fr;
+        justify-self: center;
+      }
+
+      .panel-actions {
+        grid-column: auto;
+        grid-row: auto;
+        justify-self: center;
+      }
+
+      .battlefield {
+        min-height: 410px;
+      }
+
+      .enemy {
+        width: 62px;
+        height: 78px;
+      }
+
+      .enemy-number {
+        min-width: 38px;
+        min-height: 32px;
+        font-size: 1.05rem;
+      }
+
+      .enemy-pattern {
+        --dot-size: 5px;
+        top: 59px;
+        gap: 2px;
+        padding: 3px;
+      }
+
+      .soldier {
+        left: 58%;
+        transform: translateX(-50%) scale(0.84);
+      }
+
+      .castle-gate {
+        width: min(54px, 62%);
+        height: 96px;
+      }
+
+    }
+
+    @media (max-width: 430px) {
+      .brand {
+        align-items: flex-start;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+      }
+
+      .battlefield {
+        min-height: 360px;
+      }
+
+      .number-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @keyframes enemyLow {
+      0%,
+      100% {
+        transform: translate(-50%, -64%);
+      }
+
+      34% {
+        transform: translate(-50%, -69%) scale(0.98);
+      }
+
+      68% {
+        transform: translate(-50%, -62%) scale(1.02);
+      }
+    }
+
+    @keyframes enemyOver {
+      0%,
+      100% {
+        transform: translate(-50%, -64%);
+      }
+
+      26% {
+        transform: translate(-44%, -64%) rotate(4deg);
+      }
+
+      58% {
+        transform: translate(-56%, -64%) rotate(-5deg);
+      }
+    }
+
+    @keyframes enemyDefeat {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -64%) scale(1);
+      }
+
+      62% {
+        opacity: 1;
+        transform: translate(-50%, -68%) scale(1.08);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -76%) scale(0.72) rotate(-7deg);
+      }
+    }
+
+    @keyframes battlefieldShake {
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      20% {
+        transform: translate(-4px, 2px);
+      }
+
+      42% {
+        transform: translate(5px, -2px);
+      }
+
+      64% {
+        transform: translate(-3px, -1px);
+      }
+
+      82% {
+        transform: translate(2px, 1px);
+      }
+    }
+
+    @keyframes battlefieldHeavyShake {
+      0%,
+      100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      12% {
+        transform: translate(-9px, 5px) rotate(-0.35deg);
+      }
+
+      25% {
+        transform: translate(10px, -6px) rotate(0.42deg);
+      }
+
+      39% {
+        transform: translate(-8px, -4px) rotate(-0.25deg);
+      }
+
+      54% {
+        transform: translate(7px, 4px) rotate(0.25deg);
+      }
+
+      70% {
+        transform: translate(-4px, 2px);
+      }
+
+      86% {
+        transform: translate(3px, -1px);
+      }
+    }
+
+    @keyframes snipeImpact {
+      0% {
+        opacity: 0;
+        transform: scale(0.24) rotate(-18deg);
+      }
+
+      24% {
+        opacity: 1;
+        transform: scale(1.15) rotate(4deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.55) rotate(14deg);
+      }
+    }
+
+    @keyframes blastImpact {
+      0% {
+        opacity: 0;
+        transform: scale(0.22) rotate(-18deg);
+      }
+
+      22% {
+        opacity: 1;
+        transform: scale(1.08) rotate(8deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.8) rotate(26deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell" aria-labelledby="gameTitle">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1 id="gameTitle">10の城壁</h1>
+          <p>数の玉で、城壁を守る</p>
+        </div>
+      </div>
+      <div class="status-strip" aria-label="進行状況">
+        <span class="badge">ゲーム4</span>
+        <span class="badge coin-badge" id="coinBadge">コイン <span id="coinValue">0</span></span>
+        <span class="badge alt">スコア <span id="scoreValue">0</span></span>
+        <span class="badge warn">最高 <span id="bestValue">0</span></span>
+      </div>
+    </header>
+
+    <section class="game-area" aria-label="横向きタワーディフェンス">
+      <aside class="number-panel" aria-label="攻撃の数字ボタン">
+        <div class="panel-actions" aria-label="操作">
+          <button class="deploy-button" id="startButton" type="button" aria-label="出撃" title="出撃">
+            <span class="deploy-icon" aria-hidden="true"></span>
+          </button>
+          <button class="panel-icon-button" id="pauseButton" type="button" aria-label="一時停止" title="一時停止" data-mode="pause" disabled>
+            <span class="pause-icon" aria-hidden="true"></span>
+          </button>
+          <button class="panel-icon-button" id="resetButton" type="button" aria-label="やり直し" title="やり直し">
+            <span class="reset-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="number-grid" id="numberGrid" aria-label="1から9の玉と特殊攻撃"></div>
+      </aside>
+
+      <section class="battle-shell">
+        <div class="battle-header">
+          <section class="status-card mission-card" aria-label="ウェーブの残り時間">
+            <p class="status-label" id="missionLabel">第1ウェーブ 残り時間</p>
+            <p class="status-value" id="missionTimeValue">30秒</p>
+            <div class="meter mission-meter" aria-label="30秒守りきる"><span id="goalMeter"></span></div>
+          </section>
+        </div>
+
+        <div class="battlefield" id="battlefield" aria-label="右から敵が歩いてくる戦場">
+          <div class="cloud-bank" aria-hidden="true"></div>
+          <div class="far-hills" aria-hidden="true"></div>
+          <div class="field-grid" aria-hidden="true"></div>
+          <div class="lane one" aria-hidden="true"></div>
+          <div class="lane two" aria-hidden="true"></div>
+          <div class="lane three" aria-hidden="true"></div>
+          <div class="lane four" aria-hidden="true"></div>
+          <div class="castle-health-hud" aria-label="城壁の体力">
+            <p class="status-label">城壁</p>
+            <p class="status-value"><span id="castleHpValue">10</span> / <span id="castleHpMaxValue">10</span></p>
+            <div class="meter health"><span id="castleHpMeter"></span></div>
+          </div>
+          <div class="castle-wall" aria-hidden="true">
+            <div class="castle-gate"></div>
+            <div class="soldier one"><span class="bow"></span></div>
+            <div class="soldier two"><span class="bow"></span></div>
+            <div class="soldier three"><span class="bow"></span></div>
+            <div class="soldier four"><span class="bow"></span></div>
+          </div>
+          <div class="enemy-layer" id="enemyLayer"></div>
+          <div class="arrow-layer" id="arrowLayer"></div>
+          <div class="floating-layer" id="floatingLayer"></div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="control-bar" aria-label="操作">
+      <span class="phase-text" id="phaseText">準備完了</span>
+      <nav class="page-links" aria-label="ページいどう">
+        <a class="page-jump" href="index.html">けいさんき</a>
+        <a class="page-jump" href="game.html">ゲーム1</a>
+        <a class="page-jump" href="game2.html">ゲーム2</a>
+        <a class="page-jump" href="game3.html">ゲーム3</a>
+      </nav>
+    </footer>
+  </main>
+
+  <script>
+    const lanes = [40, 53, 66, 79];
+    const wallX = 18;
+    const spawnX = 108;
+    const waveDurationSeconds = 30;
+    const maxCastleHp = 10;
+    const totalWaves = 3;
+    const shotTravelMs = 520;
+    const shotIntervalMs = 78;
+    const meteorTravelMs = 620;
+    const waveTransitionMs = 950;
+    const specialCosts = {
+      snipe: 2,
+      meteor: 10,
+      repair: 5
+    };
+    const attackBaseValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const difficultyConfig = {
+      easy: {
+        label: "簡単",
+        missAdvanceRatio: 0,
+        shuffleEnemiesOnMiss: false
+      },
+      normal: {
+        label: "普通",
+        missAdvanceRatio: 0.2,
+        shuffleEnemiesOnMiss: false
+      },
+      hard: {
+        label: "難しい",
+        missAdvanceRatio: 0,
+        shuffleEnemiesOnMiss: true
+      }
+    };
+    const waveRuleConfig = {
+      1: "easy",
+      2: "normal",
+      3: "hard"
+    };
+
+    const refs = {
+      coinBadge: document.getElementById("coinBadge"),
+      coinValue: document.getElementById("coinValue"),
+      scoreValue: document.getElementById("scoreValue"),
+      bestValue: document.getElementById("bestValue"),
+      missionLabel: document.getElementById("missionLabel"),
+      missionTimeValue: document.getElementById("missionTimeValue"),
+      goalMeter: document.getElementById("goalMeter"),
+      castleHpValue: document.getElementById("castleHpValue"),
+      castleHpMaxValue: document.getElementById("castleHpMaxValue"),
+      castleHpMeter: document.getElementById("castleHpMeter"),
+      battlefield: document.getElementById("battlefield"),
+      enemyLayer: document.getElementById("enemyLayer"),
+      arrowLayer: document.getElementById("arrowLayer"),
+      floatingLayer: document.getElementById("floatingLayer"),
+      numberGrid: document.getElementById("numberGrid"),
+      phaseText: document.getElementById("phaseText"),
+      startButton: document.getElementById("startButton"),
+      pauseButton: document.getElementById("pauseButton"),
+      resetButton: document.getElementById("resetButton")
+    };
+
+    const state = {
+      phase: "ready",
+      message: "準備完了",
+      coins: 0,
+      score: 0,
+      best: Number(localStorage.getItem("game4BestScore") || "0"),
+      defeated: 0,
+      combo: 0,
+      misses: 0,
+      castleHp: maxCastleHp,
+      wave: 1,
+      elapsed: 0,
+      nextEnemyId: 1,
+      nextArrowId: 1,
+      nextFloatingId: 1,
+      enemies: [],
+      arrows: [],
+      floating: [],
+      impactTimers: [],
+      frameId: null,
+      lastFrameAt: 0,
+      lastSpawnAt: 0,
+      spawnHoldUntil: 0,
+      settleUntil: 0,
+      lastButtonValue: null,
+      activeButtonUntil: 0,
+      coinPulseUntil: 0,
+      meteorPending: false
+    };
+
+    const enemyElements = new Map();
+    const arrowElements = new Map();
+    const floatingElements = new Map();
+    const audioState = {
+      context: null,
+      supported: Boolean(window.AudioContext || window.webkitAudioContext)
+    };
+    const coinAudioState = {
+      element: null,
+      primed: false,
+      supported: typeof Audio !== "undefined"
+    };
+    const missAudioState = {
+      element: null,
+      primed: false,
+      supported: typeof Audio !== "undefined"
+    };
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function now() {
+      return performance.now();
+    }
+
+    function impactDelay(value) {
+      return shotTravelMs + Math.max(0, value - 1) * shotIntervalMs;
+    }
+
+    function scheduleImpact(callback, delay) {
+      const timerId = setTimeout(() => {
+        state.impactTimers = state.impactTimers.filter((id) => id !== timerId);
+        callback();
+      }, delay);
+      state.impactTimers.push(timerId);
+    }
+
+    function clearImpactTimers() {
+      state.impactTimers.forEach((timerId) => clearTimeout(timerId));
+      state.impactTimers = [];
+    }
+
+    function getAudioContext() {
+      if (!audioState.supported) {
+        return null;
+      }
+
+      if (!audioState.context) {
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+
+        try {
+          audioState.context = new AudioContextConstructor();
+        } catch (error) {
+          audioState.supported = false;
+          return null;
+        }
+      }
+
+      if (audioState.context.state === "suspended") {
+        const resume = audioState.context.resume();
+
+        if (resume && typeof resume.catch === "function") {
+          resume.catch(() => {});
+        }
+      }
+
+      return audioState.context;
+    }
+
+    function safelyPlaySound(play) {
+      const context = getAudioContext();
+
+      if (!context) {
+        return;
+      }
+
+      try {
+        play(context);
+      } catch (error) {
+        audioState.supported = false;
+      }
+    }
+
+    function getCoinAudio() {
+      if (!coinAudioState.supported) {
+        return null;
+      }
+
+      if (!coinAudioState.element) {
+        try {
+          coinAudioState.element = new Audio("assets/audio/coin05.mp3");
+          coinAudioState.element.preload = "auto";
+          coinAudioState.element.load();
+        } catch (error) {
+          coinAudioState.supported = false;
+          return null;
+        }
+      }
+
+      return coinAudioState.element;
+    }
+
+    function getMissAudio() {
+      if (!missAudioState.supported) {
+        return null;
+      }
+
+      if (!missAudioState.element) {
+        try {
+          missAudioState.element = new Audio("assets/audio/poka02.mp3");
+          missAudioState.element.preload = "auto";
+          missAudioState.element.load();
+        } catch (error) {
+          missAudioState.supported = false;
+          return null;
+        }
+      }
+
+      return missAudioState.element;
+    }
+
+    function primeCoinSound() {
+      if (coinAudioState.primed) {
+        return;
+      }
+
+      const audio = getCoinAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      const previousVolume = audio.volume;
+      audio.volume = 0;
+
+      try {
+        const playPromise = audio.play();
+        const finishPrime = () => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = previousVolume;
+          coinAudioState.primed = true;
+        };
+
+        if (playPromise && typeof playPromise.then === "function") {
+          playPromise.then(finishPrime).catch(() => {
+            audio.volume = previousVolume;
+          });
+        } else {
+          finishPrime();
+        }
+      } catch (error) {
+        audio.volume = previousVolume;
+      }
+    }
+
+    function primeMissSound() {
+      if (missAudioState.primed) {
+        return;
+      }
+
+      const audio = getMissAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      const previousVolume = audio.volume;
+      audio.volume = 0;
+
+      try {
+        const playPromise = audio.play();
+        const finishPrime = () => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = previousVolume;
+          missAudioState.primed = true;
+        };
+
+        if (playPromise && typeof playPromise.then === "function") {
+          playPromise.then(finishPrime).catch(() => {
+            audio.volume = previousVolume;
+          });
+        } else {
+          finishPrime();
+        }
+      } catch (error) {
+        audio.volume = previousVolume;
+      }
+    }
+
+    function createTone(context, options) {
+      const oscillator = context.createOscillator();
+      const volume = context.createGain();
+      const startedAt = context.currentTime + (options.start || 0);
+      const endedAt = startedAt + options.duration;
+      const peakAt = Math.min(startedAt + 0.014, endedAt - 0.004);
+      const endFrequency = options.endFrequency || options.frequency;
+
+      oscillator.type = options.type || "sine";
+      oscillator.frequency.setValueAtTime(options.frequency, startedAt);
+
+      if (endFrequency !== options.frequency) {
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), endedAt);
+      }
+
+      volume.gain.setValueAtTime(0.0001, startedAt);
+      volume.gain.exponentialRampToValueAtTime(Math.max(0.0001, options.gain), peakAt);
+      volume.gain.exponentialRampToValueAtTime(0.0001, endedAt);
+
+      oscillator.connect(volume);
+      volume.connect(context.destination);
+      oscillator.start(startedAt);
+      oscillator.stop(endedAt + 0.02);
+      oscillator.addEventListener("ended", () => {
+        oscillator.disconnect();
+        volume.disconnect();
+      }, { once: true });
+    }
+
+    function createNoiseBurst(context, options) {
+      const duration = options.duration || 0.1;
+      const bufferSize = Math.max(1, Math.floor(context.sampleRate * duration));
+      const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+      const data = buffer.getChannelData(0);
+      const source = context.createBufferSource();
+      const filter = context.createBiquadFilter();
+      const volume = context.createGain();
+      const startedAt = context.currentTime + (options.start || 0);
+      const endedAt = startedAt + duration;
+
+      for (let index = 0; index < bufferSize; index += 1) {
+        const fade = 1 - index / bufferSize;
+        data[index] = (Math.random() * 2 - 1) * fade;
+      }
+
+      source.buffer = buffer;
+      filter.type = options.filterType || "bandpass";
+      filter.frequency.setValueAtTime(options.frequency || 900, startedAt);
+      filter.Q.setValueAtTime(options.q || 0.8, startedAt);
+      volume.gain.setValueAtTime(0.0001, startedAt);
+      volume.gain.exponentialRampToValueAtTime(Math.max(0.0001, options.gain || 0.03), startedAt + 0.012);
+      volume.gain.exponentialRampToValueAtTime(0.0001, endedAt);
+
+      source.connect(filter);
+      filter.connect(volume);
+      volume.connect(context.destination);
+      source.start(startedAt);
+      source.stop(endedAt + 0.02);
+      source.addEventListener("ended", () => {
+        source.disconnect();
+        filter.disconnect();
+        volume.disconnect();
+      }, { once: true });
+    }
+
+    function primeSynthSound() {
+      getAudioContext();
+    }
+
+    function playShotSound(value) {
+      safelyPlaySound((context) => {
+        if (value === 0) {
+          createTone(context, {
+            type: "triangle",
+            frequency: 170,
+            endFrequency: 90,
+            duration: 0.08,
+            gain: 0.028
+          });
+          createTone(context, {
+            type: "sine",
+            start: 0.03,
+            frequency: 120,
+            endFrequency: 70,
+            duration: 0.05,
+            gain: 0.018
+          });
+          return;
+        }
+
+        for (let index = 0; index < value; index += 1) {
+          const start = index * shotIntervalMs / 1000;
+          const frequency = 300 + (index % 5) * 26 + Math.min(value, 10) * 4;
+          createTone(context, {
+            type: "triangle",
+            start,
+            frequency,
+            endFrequency: frequency * 1.55,
+            duration: 0.072,
+            gain: 0.03
+          });
+          createTone(context, {
+            type: "sine",
+            start: start + 0.026,
+            frequency: frequency * 1.35,
+            endFrequency: frequency * 1.9,
+            duration: 0.052,
+            gain: 0.017
+          });
+        }
+      });
+    }
+
+    function playDefeatSound() {
+      safelyPlaySound((context) => {
+        createTone(context, {
+          type: "triangle",
+          frequency: 260,
+          endFrequency: 130,
+          duration: 0.14,
+          gain: 0.052
+        });
+        createTone(context, {
+          type: "sine",
+          start: 0.035,
+          frequency: 392,
+          endFrequency: 196,
+          duration: 0.11,
+          gain: 0.036
+        });
+      });
+    }
+
+    function playCoinSound() {
+      const audio = getCoinAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 1;
+
+        const playPromise = audio.play();
+
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      } catch (error) {
+        coinAudioState.supported = false;
+      }
+    }
+
+    function playMissSound() {
+      const audio = getMissAudio();
+
+      if (!audio) {
+        return;
+      }
+
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 0.9;
+
+        const playPromise = audio.play();
+
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      } catch (error) {
+        missAudioState.supported = false;
+      }
+    }
+
+    function playWaveFanfare() {
+      safelyPlaySound((context) => {
+        [
+          { type: "triangle", start: 0.16, frequency: 523.25, endFrequency: 523.25, duration: 0.13, gain: 0.034 },
+          { type: "triangle", start: 0.29, frequency: 659.25, endFrequency: 659.25, duration: 0.13, gain: 0.034 },
+          { type: "triangle", start: 0.42, frequency: 783.99, endFrequency: 783.99, duration: 0.18, gain: 0.038 },
+          { type: "sine", start: 0.44, frequency: 1046.5, endFrequency: 1046.5, duration: 0.22, gain: 0.024 },
+          { type: "sawtooth", start: 0.45, frequency: 392, endFrequency: 392, duration: 0.16, gain: 0.012 }
+        ].forEach((tone) => createTone(context, tone));
+      });
+    }
+
+    function playMeteorSound() {
+      safelyPlaySound((context) => {
+        [
+          { type: "sawtooth", start: 0.00, frequency: 760, endFrequency: 86, duration: 0.72, gain: 0.026 },
+          { type: "triangle", start: 0.08, frequency: 420, endFrequency: 62, duration: 0.66, gain: 0.03 },
+          { type: "sawtooth", start: 0.18, frequency: 250, endFrequency: 58, duration: 0.58, gain: 0.038 },
+          { type: "triangle", start: 0.42, frequency: 104, endFrequency: 38, duration: 0.34, gain: 0.058 },
+          { type: "square", start: 0.48, frequency: 52, endFrequency: 32, duration: 0.22, gain: 0.03 },
+          { type: "sawtooth", start: 0.55, frequency: 74, endFrequency: 45, duration: 0.24, gain: 0.022 }
+        ].forEach((tone) => createTone(context, tone));
+        createNoiseBurst(context, { start: 0.06, duration: 0.58, gain: 0.026, frequency: 520, filterType: "lowpass", q: 0.55 });
+        createNoiseBurst(context, { start: 0.34, duration: 0.28, gain: 0.02, frequency: 220, filterType: "lowpass", q: 0.7 });
+      });
+    }
+
+    function playSnipeSound() {
+      safelyPlaySound((context) => {
+        [
+          { type: "square", start: 0.00, frequency: 980, endFrequency: 250, duration: 0.09, gain: 0.044 },
+          { type: "sawtooth", start: 0.015, frequency: 720, endFrequency: 160, duration: 0.12, gain: 0.036 },
+          { type: "triangle", start: 0.055, frequency: 180, endFrequency: 58, duration: 0.22, gain: 0.064 },
+          { type: "square", start: 0.075, frequency: 96, endFrequency: 39, duration: 0.18, gain: 0.034 },
+          { type: "sawtooth", start: 0.105, frequency: 58, endFrequency: 34, duration: 0.2, gain: 0.02 }
+        ].forEach((tone) => createTone(context, tone));
+        createNoiseBurst(context, { start: 0.005, duration: 0.075, gain: 0.05, frequency: 1800, filterType: "highpass", q: 0.9 });
+        createNoiseBurst(context, { start: 0.075, duration: 0.12, gain: 0.032, frequency: 520, filterType: "bandpass", q: 0.8 });
+      });
+    }
+
+    function playMeteorImpactSound() {
+      safelyPlaySound((context) => {
+        [
+          { type: "triangle", start: 0.00, frequency: 96, endFrequency: 28, duration: 0.42, gain: 0.078 },
+          { type: "square", start: 0.01, frequency: 48, endFrequency: 24, duration: 0.26, gain: 0.044 },
+          { type: "sawtooth", start: 0.04, frequency: 180, endFrequency: 46, duration: 0.34, gain: 0.038 },
+          { type: "triangle", start: 0.12, frequency: 280, endFrequency: 80, duration: 0.24, gain: 0.024 },
+          { type: "square", start: 0.18, frequency: 68, endFrequency: 35, duration: 0.18, gain: 0.026 },
+          { type: "sawtooth", start: 0.28, frequency: 118, endFrequency: 52, duration: 0.2, gain: 0.018 }
+        ].forEach((tone) => createTone(context, tone));
+        createNoiseBurst(context, { start: 0.00, duration: 0.2, gain: 0.07, frequency: 170, filterType: "lowpass", q: 0.65 });
+        createNoiseBurst(context, { start: 0.035, duration: 0.18, gain: 0.045, frequency: 980, filterType: "bandpass", q: 0.7 });
+        createNoiseBurst(context, { start: 0.19, duration: 0.28, gain: 0.032, frequency: 260, filterType: "lowpass", q: 0.55 });
+      });
+    }
+
+    function spawnInterval() {
+      return Math.max(680, 1800 - state.wave * 170);
+    }
+
+    function maxEnemies() {
+      return Math.min(10, 4 + state.wave);
+    }
+
+    function randomEnemyValue() {
+      return 1 + Math.floor(Math.random() * 9);
+    }
+
+    function currentDifficulty() {
+      return difficultyConfig[waveRuleConfig[state.wave]] || difficultyConfig.easy;
+    }
+
+    function currentWaveLabel() {
+      return `第${state.wave}ウェーブ`;
+    }
+
+    function nextWaveLabel() {
+      return `第${state.wave + 1}ウェーブ`;
+    }
+
+    function remainingMissionSeconds() {
+      return Math.max(0, Math.ceil(waveDurationSeconds - state.elapsed));
+    }
+
+    function missionRemainingRatio() {
+      return clamp((waveDurationSeconds - state.elapsed) / waveDurationSeconds, 0, 1);
+    }
+
+    function isFilledDot(index, value, fillMode = "front") {
+      const count = clamp(value, 0, 10);
+      return fillMode === "back" ? index >= 10 - count : index < count;
+    }
+
+    function setPatternValue(pattern, value) {
+      const fillMode = pattern.dataset.fillMode || "front";
+      pattern.querySelectorAll(".count-dot").forEach((dot, index) => {
+        const isFilled = isFilledDot(index, value, fillMode);
+        dot.className = `count-dot ${isFilled ? "is-filled" : "is-empty"}`;
+      });
+      pattern.dataset.value = String(clamp(value, 0, 10));
+    }
+
+    function createCountPattern(value, extraClass = "", fillMode = "front") {
+      const pattern = document.createElement("span");
+      pattern.className = ["count-pattern", extraClass].filter(Boolean).join(" ");
+      pattern.setAttribute("aria-hidden", "true");
+      pattern.dataset.fillMode = fillMode;
+
+      for (let index = 0; index < 10; index += 1) {
+        const dot = document.createElement("span");
+        dot.className = `count-dot ${isFilledDot(index, value, fillMode) ? "is-filled" : "is-empty"}`;
+        pattern.append(dot);
+      }
+
+      pattern.dataset.value = String(clamp(value, 0, 10));
+      return pattern;
+    }
+
+    function advanceEnemiesForMiss(ratio) {
+      const distance = (spawnX - wallX) * ratio;
+      const target = activeEnemies()
+        .sort((a, b) => a.x - b.x)[0] || null;
+
+      if (!target) {
+        return false;
+      }
+
+      target.x -= distance;
+
+      if (state.phase === "playing" && target.x <= wallX + 2) {
+        damageCastle(target);
+      }
+
+      return true;
+    }
+
+    function shuffleValues(values) {
+      const shuffled = [...values];
+
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+
+      return shuffled;
+    }
+
+    function differentEnemyValue(value) {
+      const candidates = attackBaseValues.filter((candidate) => candidate !== value);
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    function shuffleEnemiesForMiss() {
+      const targets = state.enemies.filter((enemy) => !enemy.hit && !enemy.pendingImpact);
+
+      if (targets.length === 0) {
+        return false;
+      }
+
+      if (targets.length === 1) {
+        setEnemyValue(targets[0], differentEnemyValue(targets[0].value));
+        return true;
+      }
+
+      let values = targets.map((enemy) => enemy.value);
+
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const candidate = shuffleValues(values);
+        if (candidate.some((value, index) => value !== targets[index].value)) {
+          values = candidate;
+          break;
+        }
+      }
+
+      values.forEach((value, index) => {
+        const target = targets[index];
+        setEnemyValue(target, value === target.value ? differentEnemyValue(target.value) : value);
+      });
+
+      return true;
+    }
+
+    function applyMissPenalty() {
+      const rule = currentDifficulty();
+      const notices = [];
+
+      if (rule.missAdvanceRatio > 0 && activeEnemies().length > 0) {
+        if (advanceEnemiesForMiss(rule.missAdvanceRatio)) {
+          addFloating("前進", wallX + 18, 68, "over");
+          notices.push("敵が前進");
+        }
+      }
+
+      if (rule.shuffleEnemiesOnMiss) {
+        if (shuffleEnemiesForMiss()) {
+          addFloating("敵入替", wallX + 20, 22, "wave");
+          notices.push("敵の数が入替");
+        }
+      }
+
+      return notices;
+    }
+
+    function withPenaltyMessage(baseText, notices) {
+      return notices.length > 0 ? `${baseText} / ${notices.join(" / ")}` : baseText;
+    }
+
+    function clearEnemyTimers(enemy) {
+      if (!enemy.animationTimers) {
+        enemy.animationTimers = [];
+        return;
+      }
+
+      enemy.animationTimers.forEach((timerId) => clearTimeout(timerId));
+      enemy.animationTimers = [];
+    }
+
+    function setEnemyVisualValue(enemy, value) {
+      enemy.visualValue = clamp(value, 0, 10);
+      const element = enemyElements.get(enemy.id);
+
+      if (element && element.countPattern) {
+        setPatternValue(element.countPattern, enemy.visualValue);
+      }
+    }
+
+    function setEnemyValue(enemy, value) {
+      enemy.value = clamp(value, 1, 9);
+      setEnemyVisualValue(enemy, enemy.value);
+      const element = enemyElements.get(enemy.id);
+
+      if (!element) {
+        return;
+      }
+
+      const number = element.querySelector(".enemy-number");
+
+      if (number) {
+        number.textContent = String(enemy.value);
+      }
+
+      element.setAttribute("aria-label", `${enemy.value}の敵`);
+    }
+
+    function animateEnemyPattern(enemy, toValue, shouldRestore) {
+      clearEnemyTimers(enemy);
+
+      const fromValue = clamp(enemy.visualValue, 0, 10);
+      const finalValue = clamp(toValue, 0, 10);
+      const direction = finalValue >= fromValue ? 1 : -1;
+      let delay = 0;
+
+      for (
+        let value = fromValue + direction;
+        direction > 0 ? value <= finalValue : value >= finalValue;
+        value += direction
+      ) {
+        delay += 70;
+        const timerId = setTimeout(() => setEnemyVisualValue(enemy, value), delay);
+        enemy.animationTimers.push(timerId);
+      }
+
+      if (fromValue === finalValue) {
+        setEnemyVisualValue(enemy, finalValue);
+      }
+
+      if (shouldRestore) {
+        const timerId = setTimeout(() => setEnemyVisualValue(enemy, enemy.value), delay + 420);
+        enemy.animationTimers.push(timerId);
+      }
+    }
+
+    function flashEnemy(enemy, className) {
+      const element = enemyElements.get(enemy.id);
+
+      if (!element) {
+        return;
+      }
+
+      element.classList.remove("is-low", "is-over");
+      element.classList.add(className);
+      setTimeout(() => element.classList.remove(className), 520);
+    }
+
+    function createEnemyElement(enemy) {
+      const element = document.createElement("div");
+      element.className = "enemy";
+      element.setAttribute("role", "img");
+      element.setAttribute("aria-label", `${enemy.value}の敵`);
+
+      const head = document.createElement("span");
+      head.className = "enemy-head";
+
+      const body = document.createElement("span");
+      body.className = "enemy-body";
+
+      const number = document.createElement("span");
+      number.className = "enemy-number";
+      number.textContent = String(enemy.value);
+
+      const pattern = createCountPattern(enemy.visualValue, "enemy-pattern", "front");
+      element.countPattern = pattern;
+      element.append(head, body, number, pattern);
+      refs.enemyLayer.append(element);
+      enemyElements.set(enemy.id, element);
+      return element;
+    }
+
+    function createArrowElement(arrow) {
+      const element = document.createElement("div");
+      element.className = "shot-burst";
+      element.setAttribute("aria-hidden", "true");
+
+      if (arrow.value === 0) {
+        const zero = document.createElement("span");
+        zero.className = "shot-zero";
+        zero.textContent = "0";
+        element.append(zero);
+      } else {
+        const dot = document.createElement("span");
+        dot.className = "shot-dot";
+        element.append(dot);
+      }
+
+      refs.arrowLayer.append(element);
+      arrowElements.set(arrow.id, element);
+      return element;
+    }
+
+    function createFloatingElement(item) {
+      const element = document.createElement("div");
+      element.className = `floating-text ${item.kind}`;
+
+      if (item.kind === "spill") {
+        const dot = document.createElement("span");
+        dot.className = "spill-dot";
+        element.append(dot);
+      } else if (item.kind === "meteor") {
+        const rock = document.createElement("span");
+        rock.className = "meteor-rock";
+        element.append(rock);
+      } else if (item.kind === "snipe-impact") {
+        const mark = document.createElement("span");
+        mark.className = "snipe-impact-mark";
+        element.append(mark);
+      } else if (item.kind === "blast") {
+        const blast = document.createElement("span");
+        blast.className = "blast-mark";
+        element.append(blast);
+      } else {
+        element.textContent = item.text;
+      }
+
+      refs.floatingLayer.append(element);
+      floatingElements.set(item.id, element);
+      return element;
+    }
+
+    function spawnEnemy() {
+      if (state.enemies.length >= maxEnemies()) {
+        return;
+      }
+
+      const laneIndex = Math.floor(Math.random() * lanes.length);
+      const value = randomEnemyValue();
+      state.enemies.push({
+        id: state.nextEnemyId,
+        value,
+        visualValue: value,
+        laneIndex,
+        x: spawnX + Math.random() * 8,
+        speed: 4.2 + state.wave * 0.45 + Math.random() * 1.1,
+        hit: false,
+        pendingImpact: false,
+        removeAt: null,
+        animationTimers: []
+      });
+      state.nextEnemyId += 1;
+    }
+
+    function closestEnemy() {
+      return state.enemies
+        .filter((enemy) => !enemy.hit && !enemy.pendingImpact)
+        .sort((a, b) => a.x - b.x)[0] || null;
+    }
+
+    function addArrow(target, value) {
+      const laneY = lanes[target.laneIndex];
+      const startAt = now();
+
+      if (value === 0) {
+        state.arrows.push({
+          id: state.nextArrowId,
+          value: 0,
+          fromX: wallX - 2,
+          fromY: laneY - 5,
+          toX: target.x,
+          toY: laneY - 6,
+          startAt,
+          endAt: startAt + shotTravelMs
+        });
+        state.nextArrowId += 1;
+        return;
+      }
+
+      for (let index = 0; index < value; index += 1) {
+        const rowOffset = (index % 3) - 1;
+        const columnOffset = Math.floor(index / 3) * 0.7;
+        const ballStartAt = startAt + index * shotIntervalMs;
+
+        state.arrows.push({
+          id: state.nextArrowId,
+          value: 1,
+          fromX: wallX - 2,
+          fromY: laneY - 5 + rowOffset * 2,
+          toX: target.x - 1 + columnOffset,
+          toY: laneY - 6 + rowOffset * 4,
+          startAt: ballStartAt,
+          endAt: ballStartAt + shotTravelMs
+        });
+        state.nextArrowId += 1;
+      }
+    }
+
+    function addFloating(text, x, y, kind = "") {
+      state.floating.push({
+        id: state.nextFloatingId,
+        text,
+        x,
+        y,
+        kind,
+        startAt: now(),
+        endAt: now() + 820
+      });
+      state.nextFloatingId += 1;
+    }
+
+    function addSpillBalls(target, count) {
+      const laneY = lanes[target.laneIndex];
+
+      for (let index = 0; index < count; index += 1) {
+        const rowOffset = (index % 3) - 1;
+        const column = Math.floor(index / 3);
+        state.floating.push({
+          id: state.nextFloatingId,
+          text: "",
+          x: target.x + 1,
+          y: laneY - 8,
+          toX: target.x + 8 + column * 3,
+          toY: laneY - 28 + rowOffset * 10,
+          kind: "spill",
+          startAt: now(),
+          endAt: now() + 720
+        });
+        state.nextFloatingId += 1;
+      }
+    }
+
+    function addCoinReward(target) {
+      state.coins += 1;
+      state.coinPulseUntil = now() + 480;
+      addFloating("+1", target.x, lanes[target.laneIndex] - 29, "coin");
+      playCoinSound();
+      setTimeout(render, 520);
+    }
+
+    function spendCoins(cost) {
+      if (state.coins < cost) {
+        state.coinPulseUntil = now() + 480;
+        setFeedback(`コインが${cost}必要`);
+        return false;
+      }
+
+      state.coins -= cost;
+      state.coinPulseUntil = now() + 480;
+      addFloating(`-${cost}`, wallX + 8, 26, "coin-spend");
+      return true;
+    }
+
+    function updateBestScore() {
+      if (state.score > state.best) {
+        state.best = state.score;
+        localStorage.setItem("game4BestScore", String(state.best));
+      }
+    }
+
+    function defeatEnemy(target, options = {}) {
+      if (!target || target.hit) {
+        return { defeated: false, waveAdvanced: false, cleared: false };
+      }
+
+      const shouldUseCombo = options.useCombo === true;
+      const scoreBase = options.scoreBase ?? 100;
+      target.pendingImpact = false;
+      target.hit = true;
+      target.removeAt = now() + 850;
+      clearEnemyTimers(target);
+      animateEnemyPattern(target, 10, false);
+
+      if (options.text !== "") {
+        addFloating(
+          options.text || `${target.value}=10`,
+          target.x,
+          lanes[target.laneIndex] - 15,
+          options.kind || "ok"
+        );
+      }
+
+      if (options.playSound !== false) {
+        playDefeatSound();
+      }
+
+      if (options.rewardCoin) {
+        addCoinReward(target);
+      }
+
+      if (shouldUseCombo) {
+        state.combo += 1;
+      }
+
+      state.defeated += 1;
+      const comboPoints = shouldUseCombo ? state.combo * 12 : 0;
+      state.score += scoreBase + comboPoints + Math.round((target.x - wallX) * 1.5);
+      updateBestScore();
+
+      return {
+        defeated: true,
+        waveAdvanced: false,
+        cleared: false
+      };
+    }
+
+    function addMeteor(target, index) {
+      state.floating.push({
+        id: state.nextFloatingId,
+        text: "",
+        x: 24 + index * 13 % 78,
+        y: -14 - index * 6,
+        toX: clamp(target.x + (index % 3 - 1) * 4, wallX + 7, spawnX - 4),
+        toY: lanes[target.laneIndex] - 7 + (index % 2 ? 5 : -5),
+        kind: "meteor",
+        startAt: now(),
+        endAt: now() + meteorTravelMs
+      });
+      state.nextFloatingId += 1;
+    }
+
+    function addSnipeImpact(target) {
+      state.floating.push({
+        id: state.nextFloatingId,
+        text: "",
+        x: target.x,
+        y: lanes[target.laneIndex] - 12,
+        kind: "snipe-impact",
+        startAt: now(),
+        endAt: now() + 680
+      });
+      state.nextFloatingId += 1;
+    }
+
+    function addBlast(x, y, delay = 0) {
+      state.floating.push({
+        id: state.nextFloatingId,
+        text: "",
+        x,
+        y,
+        kind: "blast",
+        startAt: now() + delay,
+        endAt: now() + delay + 760
+      });
+      state.nextFloatingId += 1;
+    }
+
+    function shakeBattlefield(className, duration) {
+      refs.battlefield.classList.remove("is-shaking", "is-heavy-shaking");
+      refs.battlefield.classList.add(className);
+      setTimeout(() => refs.battlefield.classList.remove(className), duration);
+    }
+
+    function activeEnemies() {
+      return state.enemies.filter((enemy) => !enemy.hit);
+    }
+
+    function damageCastle(enemy) {
+      if (!enemy || enemy.hit) {
+        return;
+      }
+
+      enemy.pendingImpact = false;
+      enemy.hit = true;
+      enemy.removeAt = now() + 520;
+      clearEnemyTimers(enemy);
+      state.combo = 0;
+      state.castleHp = Math.max(0, state.castleHp - 1);
+      playMissSound();
+      addFloating("-1", wallX + 5, lanes[enemy.laneIndex] - 16, "over");
+      setFeedback(`城壁にダメージ ${state.castleHp} / ${maxCastleHp}`);
+
+      if (state.castleHp <= 0) {
+        finishGame("over");
+      }
+    }
+
+    function useRepair() {
+      if (state.phase !== "playing") {
+        setFeedback("出撃してから使える");
+        render();
+        return;
+      }
+
+      if (state.castleHp >= maxCastleHp) {
+        setFeedback("城壁は満タン");
+        render();
+        return;
+      }
+
+      if (!spendCoins(specialCosts.repair)) {
+        playMissSound();
+        render();
+        return;
+      }
+
+      state.castleHp = Math.min(maxCastleHp, state.castleHp + 1);
+      addFloating("+1", wallX + 8, 22, "ok");
+      setFeedback(`城壁を修理 ${state.castleHp} / ${maxCastleHp}`);
+      render();
+    }
+
+    function useSnipe() {
+      if (state.phase !== "playing") {
+        setFeedback("出撃してから使える");
+        render();
+        return;
+      }
+
+      const target = closestEnemy();
+
+      if (!target) {
+        playMissSound();
+        setFeedback("狙える敵がいない");
+        render();
+        return;
+      }
+
+      if (!spendCoins(specialCosts.snipe)) {
+        playMissSound();
+        render();
+        return;
+      }
+
+      state.combo = 0;
+      playSnipeSound();
+      addSnipeImpact(target);
+      shakeBattlefield("is-shaking", 420);
+      const result = defeatEnemy(target, {
+        text: "撃破",
+        kind: "ok",
+        rewardCoin: false,
+        useCombo: false,
+        scoreBase: 70
+      });
+
+      setFeedback(result.waveAdvanced ? `ウェーブ${state.wave}開始` : "先頭を撃破");
+
+      if (result.cleared) {
+        finishGame("clear");
+        return;
+      }
+
+      render();
+    }
+
+    function resolveMeteor(targets) {
+      if (state.phase === "paused") {
+        scheduleImpact(() => resolveMeteor(targets), 80);
+        return;
+      }
+
+      state.meteorPending = false;
+
+      if (state.phase !== "playing") {
+        return;
+      }
+
+      let defeatedCount = 0;
+      let waveAdvanced = false;
+      let cleared = false;
+
+      targets.forEach((target) => {
+        if (!state.enemies.includes(target) || target.hit) {
+          return;
+        }
+
+        const result = defeatEnemy(target, {
+          text: "",
+          rewardCoin: false,
+          playSound: false,
+          useCombo: false,
+          scoreBase: 80
+        });
+
+        if (result.defeated) {
+          defeatedCount += 1;
+        }
+
+        waveAdvanced = waveAdvanced || result.waveAdvanced;
+        cleared = cleared || result.cleared;
+      });
+
+      if (defeatedCount > 0) {
+        playMeteorImpactSound();
+        shakeBattlefield("is-heavy-shaking", 720);
+        targets.forEach((target, index) => {
+          if (state.enemies.includes(target)) {
+            addBlast(target.x, lanes[target.laneIndex] - 8, index * 35);
+          }
+        });
+        addBlast(42, 58, 90);
+        addBlast(72, 69, 140);
+        addFloating("隕石", 58, 28, "wave");
+        setFeedback(waveAdvanced ? `ウェーブ${state.wave}開始` : `${defeatedCount}体を隕石で撃破`);
+      } else {
+        setFeedback("隕石は空振り");
+      }
+
+      if (cleared) {
+        finishGame("clear");
+        return;
+      }
+
+      render();
+    }
+
+    function useMeteor() {
+      if (state.phase !== "playing") {
+        setFeedback("出撃してから使える");
+        render();
+        return;
+      }
+
+      if (state.meteorPending) {
+        setFeedback("隕石が落下中");
+        render();
+        return;
+      }
+
+      const targets = activeEnemies();
+
+      if (targets.length === 0) {
+        playMissSound();
+        setFeedback("狙える敵がいない");
+        render();
+        return;
+      }
+
+      if (!spendCoins(specialCosts.meteor)) {
+        playMissSound();
+        render();
+        return;
+      }
+
+      state.combo = 0;
+      state.meteorPending = true;
+      targets.forEach((target, index) => {
+        target.pendingImpact = true;
+        addMeteor(target, index);
+      });
+      playMeteorSound();
+      setFeedback("隕石が落ちる");
+      scheduleImpact(() => resolveMeteor(targets), meteorTravelMs);
+      render();
+    }
+
+    function setFeedback(text) {
+      state.message = text;
+    }
+
+    function resolveShot(target, value, sum) {
+      if (state.phase === "paused") {
+        scheduleImpact(() => resolveShot(target, value, sum), 80);
+        return;
+      }
+
+      if (state.phase !== "playing" || !state.enemies.includes(target) || !target.pendingImpact) {
+        return;
+      }
+
+      target.pendingImpact = false;
+
+      if (sum < 10) {
+        state.combo = 0;
+        state.misses += 1;
+        playMissSound();
+        animateEnemyPattern(target, sum, true);
+        flashEnemy(target, "is-low");
+        addFloating(`${sum}/10`, target.x, lanes[target.laneIndex] - 15, "low");
+        const notices = applyMissPenalty();
+        if (state.phase !== "playing") {
+          render();
+          return;
+        }
+        setFeedback(withPenaltyMessage(`${target.value}と${value}で${sum}。まだ足りない`, notices));
+        render();
+        return;
+      }
+
+      if (sum > 10) {
+        state.combo = 0;
+        state.misses += 1;
+        playMissSound();
+        animateEnemyPattern(target, 10, true);
+        flashEnemy(target, "is-over");
+        addSpillBalls(target, sum - 10);
+        addFloating(`${sum}`, target.x, lanes[target.laneIndex] - 15, "over");
+        const notices = applyMissPenalty();
+        if (state.phase !== "playing") {
+          render();
+          return;
+        }
+        setFeedback(withPenaltyMessage(`${target.value}と${value}で${sum}。多すぎて弾かれた`, notices));
+        render();
+        return;
+      }
+
+      const result = defeatEnemy(target, {
+        text: `${target.value}+${value}=10`,
+        rewardCoin: true,
+        useCombo: true
+      });
+
+      setFeedback(result.waveAdvanced ? `ウェーブ${state.wave}開始` : `${target.value}と${value}で10`);
+
+      if (result.cleared) {
+        finishGame("clear");
+        return;
+      }
+
+      render();
+    }
+
+    function shoot(value) {
+      if (state.phase === "ready") {
+        startGame();
+      }
+
+      if (state.phase !== "playing") {
+        return;
+      }
+
+      state.lastButtonValue = value;
+      state.activeButtonUntil = now() + 150;
+      playShotSound(value);
+
+      const target = closestEnemy();
+
+      if (!target) {
+        state.combo = 0;
+        state.misses += 1;
+        playMissSound();
+        addFloating(`${value}`, wallX + 12, 34 + Math.random() * 42, "miss");
+        const notices = applyMissPenalty();
+        if (state.phase !== "playing") {
+          render();
+          return;
+        }
+        setFeedback(withPenaltyMessage(`${value}の玉は空振り`, notices));
+        render();
+        return;
+      }
+
+      addArrow(target, value);
+      const sum = target.value + value;
+      target.pendingImpact = true;
+      setFeedback(`${value}の玉が向かっている`);
+      scheduleImpact(() => resolveShot(target, value, sum), impactDelay(value));
+      render();
+    }
+
+    function startGame() {
+      cancelAnimationFrame(state.frameId);
+
+      if (state.phase === "waveClear") {
+        startNextWave();
+        return;
+      }
+
+      state.phase = "playing";
+      state.lastFrameAt = now();
+      state.lastSpawnAt = now();
+      state.spawnHoldUntil = 0;
+      state.settleUntil = 0;
+
+      if (state.enemies.length === 0) {
+        spawnEnemy();
+      }
+
+      setFeedback("30秒守りきれ");
+      state.frameId = requestAnimationFrame(update);
+      render();
+    }
+
+    function pauseGame() {
+      if (state.phase === "playing") {
+        state.phase = "paused";
+        cancelAnimationFrame(state.frameId);
+        render();
+        return;
+      }
+
+      if (state.phase === "paused") {
+        state.phase = "playing";
+        state.lastFrameAt = now();
+        state.frameId = requestAnimationFrame(update);
+        render();
+      }
+    }
+
+    function resetGame() {
+      cancelAnimationFrame(state.frameId);
+      clearImpactTimers();
+      state.enemies.forEach(clearEnemyTimers);
+      state.phase = "ready";
+      state.message = "準備完了";
+      state.coins = 0;
+      state.score = 0;
+      state.defeated = 0;
+      state.combo = 0;
+      state.misses = 0;
+      state.castleHp = maxCastleHp;
+      state.wave = 1;
+      state.elapsed = 0;
+      state.nextEnemyId = 1;
+      state.nextArrowId = 1;
+      state.nextFloatingId = 1;
+      state.lastFrameAt = 0;
+      state.lastSpawnAt = 0;
+      state.spawnHoldUntil = 0;
+      state.settleUntil = 0;
+      state.lastButtonValue = null;
+      state.activeButtonUntil = 0;
+      state.coinPulseUntil = 0;
+      clearFieldObjects();
+      setFeedback("準備完了");
+      render();
+    }
+
+    function pruneTransientEffects(timestamp) {
+      state.enemies = state.enemies.filter((enemy) => !enemy.removeAt || enemy.removeAt > timestamp);
+      state.arrows = state.arrows.filter((arrow) => arrow.endAt > timestamp);
+      state.floating = state.floating.filter((item) => item.endAt > timestamp);
+    }
+
+    function clearFieldObjects() {
+      clearImpactTimers();
+      state.enemies.forEach(clearEnemyTimers);
+      state.enemies = [];
+      state.arrows = [];
+      state.floating = [];
+      state.impactTimers = [];
+      state.meteorPending = false;
+      enemyElements.forEach((element) => element.remove());
+      arrowElements.forEach((element) => element.remove());
+      floatingElements.forEach((element) => element.remove());
+      enemyElements.clear();
+      arrowElements.clear();
+      floatingElements.clear();
+    }
+
+    function settleEndEffects(timestamp) {
+      if (state.phase !== "clear" && state.phase !== "over") {
+        return;
+      }
+
+      pruneTransientEffects(timestamp);
+      render(timestamp);
+
+      const hasActiveEffects =
+        state.enemies.some((enemy) => enemy.removeAt && enemy.removeAt > timestamp) ||
+        state.arrows.length > 0 ||
+        state.floating.length > 0 ||
+        state.coinPulseUntil > timestamp;
+
+      if (hasActiveEffects && timestamp < state.settleUntil) {
+        state.frameId = requestAnimationFrame(settleEndEffects);
+      }
+    }
+
+    function finishGame(result) {
+      state.phase = result;
+      cancelAnimationFrame(state.frameId);
+      clearImpactTimers();
+      state.meteorPending = false;
+      state.spawnHoldUntil = 0;
+      state.settleUntil = now() + 1400;
+      const fallbackRemoveAt = now() + 500;
+      state.enemies.forEach((enemy) => {
+        if (result !== "clear") {
+          clearEnemyTimers(enemy);
+        }
+
+        enemy.hit = true;
+
+        if (!enemy.removeAt || enemy.removeAt < fallbackRemoveAt) {
+          enemy.removeAt = fallbackRemoveAt;
+        }
+      });
+      setFeedback(result === "clear" ? "城壁を守りきった" : "城壁が壊された");
+      render();
+      state.frameId = requestAnimationFrame(settleEndEffects);
+    }
+
+    function completeWave() {
+      state.elapsed = waveDurationSeconds;
+      cancelAnimationFrame(state.frameId);
+      clearFieldObjects();
+      state.spawnHoldUntil = 0;
+      state.lastButtonValue = null;
+      state.activeButtonUntil = 0;
+      state.phase = "waveClear";
+      setFeedback(`${currentWaveLabel()}突破`);
+      playWaveFanfare();
+      render();
+    }
+
+    function startNextWave() {
+      clearFieldObjects();
+      state.wave += 1;
+      state.elapsed = 0;
+      state.combo = 0;
+      state.misses = 0;
+      state.lastFrameAt = now();
+      state.lastSpawnAt = now();
+      state.spawnHoldUntil = 0;
+      state.settleUntil = 0;
+      state.phase = "playing";
+      setFeedback(`${currentWaveLabel()}開始`);
+      playWaveFanfare();
+      spawnEnemy();
+      state.frameId = requestAnimationFrame(update);
+      render();
+    }
+
+    function update(timestamp) {
+      if (state.phase !== "playing") {
+        return;
+      }
+
+      const delta = clamp((timestamp - state.lastFrameAt) / 1000, 0, 0.05);
+      state.lastFrameAt = timestamp;
+      state.elapsed += delta;
+
+      if (state.elapsed >= waveDurationSeconds) {
+        if (state.wave >= totalWaves) {
+          state.elapsed = waveDurationSeconds;
+          finishGame("clear");
+        } else {
+          completeWave();
+        }
+        return;
+      }
+
+      if (timestamp >= state.spawnHoldUntil && timestamp - state.lastSpawnAt >= spawnInterval()) {
+        spawnEnemy();
+        state.lastSpawnAt = timestamp;
+      }
+
+      state.enemies.forEach((enemy) => {
+        if (!enemy.hit) {
+          enemy.x -= enemy.speed * delta;
+        }
+      });
+
+      state.enemies.forEach((enemy) => {
+        if (!enemy.hit && enemy.x <= wallX + 2) {
+          damageCastle(enemy);
+        }
+      });
+
+      if (state.phase !== "playing") {
+        return;
+      }
+
+      pruneTransientEffects(timestamp);
+
+      render(timestamp);
+      state.frameId = requestAnimationFrame(update);
+    }
+
+    function renderEnemies() {
+      const activeIds = new Set();
+
+      state.enemies.forEach((enemy) => {
+        activeIds.add(enemy.id);
+        const element = enemyElements.get(enemy.id) || createEnemyElement(enemy);
+        element.style.left = `${enemy.x}%`;
+        element.style.top = `${lanes[enemy.laneIndex]}%`;
+        element.style.zIndex = String(Math.round((spawnX - enemy.x) * 100) + enemy.laneIndex);
+        element.classList.toggle("is-hit", enemy.hit);
+
+        if (element.countPattern && element.countPattern.dataset.value !== String(enemy.visualValue)) {
+          setPatternValue(element.countPattern, enemy.visualValue);
+        }
+      });
+
+      enemyElements.forEach((element, id) => {
+        if (!activeIds.has(id)) {
+          element.remove();
+          enemyElements.delete(id);
+        }
+      });
+    }
+
+    function renderArrows(timestamp = now()) {
+      const activeIds = new Set();
+
+      state.arrows.forEach((arrow) => {
+        if (timestamp < arrow.startAt) {
+          return;
+        }
+
+        activeIds.add(arrow.id);
+        const element = arrowElements.get(arrow.id) || createArrowElement(arrow);
+        const progress = clamp((timestamp - arrow.startAt) / (arrow.endAt - arrow.startAt), 0, 1);
+        const x = arrow.fromX + (arrow.toX - arrow.fromX) * progress;
+        const y = arrow.fromY + (arrow.toY - arrow.fromY) * progress;
+        const pop = Math.sin(progress * Math.PI) * 0.18;
+        element.style.left = `${x}%`;
+        element.style.top = `${y}%`;
+        element.style.transform = `translate(-50%, -50%) scale(${1 + pop})`;
+      });
+
+      arrowElements.forEach((element, id) => {
+        if (!activeIds.has(id)) {
+          element.remove();
+          arrowElements.delete(id);
+        }
+      });
+    }
+
+    function renderFloating(timestamp = now()) {
+      const activeIds = new Set();
+
+      state.floating.forEach((item) => {
+        activeIds.add(item.id);
+        const element = floatingElements.get(item.id) || createFloatingElement(item);
+        const progress = clamp((timestamp - item.startAt) / (item.endAt - item.startAt), 0, 1);
+        const x = item.toX === undefined ? item.x : item.x + (item.toX - item.x) * progress;
+        const y = item.toY === undefined ? item.y - progress * 9 : item.y + (item.toY - item.y) * progress;
+        element.style.left = `${x}%`;
+        element.style.top = `${y}%`;
+        element.style.opacity = `${1 - progress}`;
+      });
+
+      floatingElements.forEach((element, id) => {
+        if (!activeIds.has(id)) {
+          element.remove();
+          floatingElements.delete(id);
+        }
+      });
+    }
+
+    function renderButtons() {
+      refs.numberGrid.querySelectorAll(".number-button").forEach((button, index) => {
+        const value = attackBaseValues[index];
+        button.dataset.value = String(value);
+        button.setAttribute("aria-label", `${value}の玉`);
+        button.setAttribute("title", `${value}の玉`);
+        const label = button.querySelector(".button-number");
+        const pattern = button.querySelector(".button-pattern");
+
+        if (label && label.textContent !== String(value)) {
+          label.textContent = String(value);
+        }
+
+        if (pattern && pattern.dataset.value !== String(value)) {
+          setPatternValue(pattern, value);
+        }
+
+        button.classList.toggle(
+          "is-active",
+          state.lastButtonValue === value && state.activeButtonUntil > now()
+        );
+      });
+
+      const hasSnipeTarget = Boolean(closestEnemy());
+      const hasMeteorTarget = activeEnemies().length > 0 && !state.meteorPending;
+      const canRepair = state.castleHp < maxCastleHp;
+
+      refs.numberGrid.querySelectorAll(".special-button").forEach((button) => {
+        const action = button.dataset.action;
+        const cost = specialCosts[action];
+        let canUse = state.phase === "playing" && state.coins >= cost;
+
+        if (action === "meteor") {
+          canUse = canUse && hasMeteorTarget;
+        } else if (action === "repair") {
+          canUse = canUse && canRepair;
+        } else {
+          canUse = canUse && hasSnipeTarget;
+        }
+
+        button.disabled = !canUse;
+      });
+    }
+
+    function setPauseButton(mode, disabled) {
+      const label = mode === "resume" ? "再開" : "一時停止";
+      refs.pauseButton.dataset.mode = mode;
+      refs.pauseButton.setAttribute("aria-label", label);
+      refs.pauseButton.setAttribute("title", label);
+      refs.pauseButton.disabled = disabled;
+    }
+
+    function renderStatus() {
+      refs.coinValue.textContent = String(state.coins);
+      refs.coinBadge.classList.toggle("is-pulsing", state.coinPulseUntil > now());
+      refs.scoreValue.textContent = String(state.score);
+      refs.bestValue.textContent = String(state.best);
+      const remainingSeconds = remainingMissionSeconds();
+      refs.missionLabel.textContent = `${currentWaveLabel()} 残り時間`;
+      refs.missionTimeValue.textContent = `${remainingSeconds}秒`;
+      refs.goalMeter.style.width = `${missionRemainingRatio() * 100}%`;
+      if (refs.goalMeter.parentElement) {
+        refs.goalMeter.parentElement.classList.toggle("time-low", remainingSeconds <= 5);
+      }
+      refs.castleHpValue.textContent = String(state.castleHp);
+      refs.castleHpMaxValue.textContent = String(maxCastleHp);
+      refs.castleHpMeter.style.width = `${clamp(state.castleHp / maxCastleHp * 100, 0, 100)}%`;
+
+      if (state.phase === "ready") {
+        refs.phaseText.textContent = state.message || "準備完了";
+        refs.startButton.setAttribute("aria-label", "出撃");
+        refs.startButton.setAttribute("title", "出撃");
+        refs.startButton.disabled = false;
+        setPauseButton("pause", true);
+      } else if (state.phase === "playing") {
+        refs.phaseText.textContent = state.message || `連続 ${state.combo} / 空振り ${state.misses}`;
+        refs.startButton.setAttribute("aria-label", "出撃中");
+        refs.startButton.setAttribute("title", "出撃中");
+        refs.startButton.disabled = true;
+        setPauseButton("pause", false);
+      } else if (state.phase === "paused") {
+        refs.phaseText.textContent = "一時停止中";
+        refs.startButton.setAttribute("aria-label", "出撃中");
+        refs.startButton.setAttribute("title", "出撃中");
+        refs.startButton.disabled = true;
+        setPauseButton("resume", false);
+      } else if (state.phase === "waveClear") {
+        refs.phaseText.textContent = state.message || `${currentWaveLabel()}突破`;
+        refs.startButton.setAttribute("aria-label", `${nextWaveLabel()}へ`);
+        refs.startButton.setAttribute("title", `${nextWaveLabel()}へ`);
+        refs.startButton.disabled = false;
+        setPauseButton("pause", true);
+      } else if (state.phase === "clear") {
+        refs.phaseText.textContent = state.message || "防衛成功";
+        refs.startButton.setAttribute("aria-label", "防衛成功");
+        refs.startButton.setAttribute("title", "防衛成功");
+        refs.startButton.disabled = true;
+        setPauseButton("pause", true);
+      } else {
+        refs.phaseText.textContent = state.message || "ゲームオーバー";
+        refs.startButton.setAttribute("aria-label", "ゲームオーバー");
+        refs.startButton.setAttribute("title", "ゲームオーバー");
+        refs.startButton.disabled = true;
+        setPauseButton("pause", true);
+      }
+    }
+
+    function render(timestamp = now()) {
+      renderEnemies();
+      renderArrows(timestamp);
+      renderFloating(timestamp);
+      renderButtons();
+      renderStatus();
+    }
+
+    function buildButtons() {
+      attackBaseValues.forEach((initialValue) => {
+        const button = document.createElement("button");
+        button.className = "number-button";
+        button.type = "button";
+        button.dataset.value = String(initialValue);
+        button.setAttribute("aria-label", `${initialValue}の玉`);
+        button.setAttribute("title", `${initialValue}の玉`);
+        button.addEventListener("click", () => shoot(Number(button.dataset.value)));
+
+        const label = document.createElement("span");
+        label.className = "button-number";
+        label.textContent = String(initialValue);
+
+        button.append(label, createCountPattern(initialValue, "button-pattern", "back"));
+        refs.numberGrid.append(button);
+      });
+
+      createSpecialButton("snipe", "先頭撃破", specialCosts.snipe, "snipe", useSnipe);
+      createSpecialButton("meteor", "隕石", specialCosts.meteor, "meteor", useMeteor);
+      createSpecialButton("repair", "修理", specialCosts.repair, "repair", useRepair);
+    }
+
+    function createSpecialButton(action, label, cost, icon, handler) {
+      const button = document.createElement("button");
+      button.className = `special-button ${action}`;
+      button.type = "button";
+      button.dataset.action = action;
+      button.setAttribute("aria-label", `${label} コイン${cost}`);
+      button.setAttribute("title", `${label} コイン${cost}`);
+      button.addEventListener("click", handler);
+
+      const iconElement = document.createElement("span");
+      iconElement.className = `special-icon ${icon}`;
+      iconElement.setAttribute("aria-hidden", "true");
+
+      const labelElement = document.createElement("span");
+      labelElement.className = "special-label";
+      labelElement.textContent = label;
+
+      const costElement = document.createElement("span");
+      costElement.className = "special-cost";
+      costElement.textContent = `コイン${cost}`;
+
+      button.append(iconElement, labelElement, costElement);
+      refs.numberGrid.append(button);
+    }
+
+    refs.startButton.addEventListener("click", startGame);
+    refs.pauseButton.addEventListener("click", pauseGame);
+    refs.resetButton.addEventListener("click", resetGame);
+    window.addEventListener("pointerdown", primeCoinSound, { once: true });
+    window.addEventListener("keydown", primeCoinSound, { once: true });
+    window.addEventListener("pointerdown", primeMissSound, { once: true });
+    window.addEventListener("keydown", primeMissSound, { once: true });
+    window.addEventListener("pointerdown", primeSynthSound, { once: true });
+    window.addEventListener("keydown", primeSynthSound, { once: true });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key >= "1" && event.key <= "9") {
+        shoot(Number(event.key));
+      }
+    });
+
+    buildButtons();
+    resetGame();
+  </script>
+</body>
+</html>

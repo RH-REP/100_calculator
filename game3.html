@@ -1,0 +1,1700 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数の開拓村 - ゲーム3 GUIレビュー</title>
+  <style>
+    :root {
+      --ink: #263238;
+      --soft-ink: #52636a;
+      --paper: #fffaf0;
+      --panel: #fffdf7;
+      --line: #2d4640;
+      --green: #4f9d69;
+      --green-deep: #236247;
+      --mint: #dff5dc;
+      --sky: #dff3fb;
+      --river: #69aeca;
+      --wood: #b86b3e;
+      --wood-dark: #704229;
+      --stone: #87949c;
+      --stone-dark: #5f6b72;
+      --food: #d75555;
+      --food-dark: #8c3331;
+      --gold: #f0c34e;
+      --violet: #7767a8;
+      --rose: #f2d3d0;
+      --shadow: rgba(20, 40, 34, 0.18);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #ecf8f0 0%, #f8f4e6 48%, #f0e9d5 100%);
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    button,
+    label,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .prototype {
+      width: min(1280px, 100%);
+      min-height: 720px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+    }
+
+    .app-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 8px 0 var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 auto;
+      position: relative;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background:
+        linear-gradient(90deg, transparent 46%, rgba(255, 255, 255, 0.55) 46% 54%, transparent 54%),
+        linear-gradient(0deg, #74b96d 0 50%, #a1d1f1 50% 100%);
+      box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      bottom: 7px;
+      width: 14px;
+      height: 18px;
+      border: 2px solid var(--line);
+      background: #d69053;
+    }
+
+    .brand-mark::before {
+      left: 9px;
+    }
+
+    .brand-mark::after {
+      right: 8px;
+      height: 24px;
+      background: #909aa0;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.2vw, 2.2rem);
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      margin: 5px 0 0;
+      color: var(--soft-ink);
+      font-size: 0.98rem;
+    }
+
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: #f4ecd3;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.alt {
+      background: var(--sky);
+    }
+
+    .screen-tabs {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(72px, 1fr));
+      gap: 8px;
+    }
+
+    .screen-tabs label {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 5px 0 var(--shadow);
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .screen-tabs label:focus-visible,
+    .action-button:focus-visible,
+    .icon-button:focus-visible {
+      outline: 4px solid #265fbd;
+      outline-offset: 2px;
+    }
+
+    .prototype > input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #tab-title:checked ~ .screen-tabs label[for="tab-title"],
+    #tab-village:checked ~ .screen-tabs label[for="tab-village"],
+    #tab-mission:checked ~ .screen-tabs label[for="tab-mission"],
+    #tab-explore:checked ~ .screen-tabs label[for="tab-explore"],
+    #tab-pack:checked ~ .screen-tabs label[for="tab-pack"],
+    #tab-build:checked ~ .screen-tabs label[for="tab-build"],
+    #tab-craft:checked ~ .screen-tabs label[for="tab-craft"],
+    #tab-battle:checked ~ .screen-tabs label[for="tab-battle"],
+    #tab-result:checked ~ .screen-tabs label[for="tab-result"] {
+      background: var(--green);
+      color: #fff;
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--shadow);
+    }
+
+    .viewport {
+      position: relative;
+      min-height: 560px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: 0 10px 0 var(--shadow);
+    }
+
+    .screen {
+      display: none;
+      min-height: 560px;
+      padding: 18px;
+    }
+
+    #tab-title:checked ~ .viewport .screen-title,
+    #tab-village:checked ~ .viewport .screen-village,
+    #tab-mission:checked ~ .viewport .screen-mission,
+    #tab-explore:checked ~ .viewport .screen-explore,
+    #tab-pack:checked ~ .viewport .screen-pack,
+    #tab-build:checked ~ .viewport .screen-build,
+    #tab-craft:checked ~ .viewport .screen-craft,
+    #tab-battle:checked ~ .viewport .screen-battle,
+    #tab-result:checked ~ .viewport .screen-result {
+      display: block;
+    }
+
+    .screen-grid {
+      min-height: 524px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .two-col {
+      grid-template-columns: minmax(260px, 0.82fr) minmax(360px, 1.18fr);
+    }
+
+    .three-col {
+      grid-template-columns: minmax(230px, 0.8fr) minmax(360px, 1.25fr) minmax(250px, 0.85fr);
+    }
+
+    .panel {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.92);
+      box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.05);
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .panel-title h2,
+    .panel-title h3 {
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    .panel-title h2 {
+      font-size: clamp(1.25rem, 2vw, 1.8rem);
+    }
+
+    .panel-title h3 {
+      font-size: 1.1rem;
+    }
+
+    .mini-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 3px 8px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: #e8f4d9;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .mini-label.warn {
+      background: #ffe8bd;
+    }
+
+    .mini-label.cool {
+      background: #d7eef7;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .action-button,
+    .icon-button {
+      min-height: 48px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 5px 0 var(--shadow);
+      font-weight: 900;
+    }
+
+    .action-button {
+      padding: 8px 14px;
+    }
+
+    .icon-button {
+      width: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .action-button.primary {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .action-button.soft {
+      background: var(--mint);
+    }
+
+    .action-button:disabled,
+    .icon-button:disabled {
+      opacity: 0.7;
+      color: #5e686a;
+      background: #edf0ec;
+    }
+
+    .resource-bar {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .resource-card {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .resource-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .big-number {
+      font-size: 1.35rem;
+    }
+
+    .tokens,
+    .bundle-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      min-height: 34px;
+    }
+
+    .token {
+      width: 24px;
+      height: 24px;
+      display: inline-block;
+      border: 2px solid var(--line);
+      border-radius: 5px;
+      position: relative;
+      flex: 0 0 auto;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.13);
+    }
+
+    .token.wood {
+      background: var(--wood);
+    }
+
+    .token.wood::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 3px;
+      width: 3px;
+      height: 14px;
+      background: rgba(255, 235, 199, 0.58);
+      box-shadow: 7px 1px 0 rgba(96, 50, 29, 0.38);
+    }
+
+    .token.stone {
+      border-radius: 50% 45% 54% 44%;
+      background: var(--stone);
+    }
+
+    .token.stone::after {
+      content: "";
+      position: absolute;
+      right: 4px;
+      top: 5px;
+      width: 7px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 5px;
+    }
+
+    .token.food {
+      border-radius: 50%;
+      background: var(--food);
+    }
+
+    .token.food::before {
+      content: "";
+      position: absolute;
+      left: 9px;
+      top: -6px;
+      width: 8px;
+      height: 7px;
+      border: 2px solid var(--line);
+      border-bottom: 0;
+      background: #5f9e50;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .token.empty {
+      background: transparent;
+      border-style: dashed;
+      box-shadow: none;
+      opacity: 0.55;
+    }
+
+    .bundle5 {
+      display: inline-grid;
+      grid-template-columns: repeat(5, 17px);
+      gap: 3px;
+      padding: 6px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .bundle5 .token {
+      width: 17px;
+      height: 17px;
+      border-width: 1px;
+      border-radius: 4px;
+    }
+
+    .crate10 {
+      width: 74px;
+      height: 56px;
+      display: inline-grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 3px;
+      padding: 6px;
+      border: 3px solid var(--wood-dark);
+      border-radius: 7px;
+      background: #dfb479;
+      position: relative;
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .crate10::after {
+      content: "10";
+      position: absolute;
+      right: -8px;
+      top: -10px;
+      min-width: 26px;
+      min-height: 26px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: #fff;
+      font-size: 0.9rem;
+      font-weight: 900;
+    }
+
+    .crate10 .mini-dot {
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .equation {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff7c7;
+      font-weight: 900;
+      font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+      line-height: 1.25;
+    }
+
+    .equation small {
+      color: var(--soft-ink);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .title-scene {
+      min-height: 524px;
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .title-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      padding: 26px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.9);
+    }
+
+    .title-copy h2 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4.9rem);
+      line-height: 1;
+    }
+
+    .title-copy p {
+      margin: 0;
+      color: var(--soft-ink);
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+
+    .title-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .world-preview {
+      position: relative;
+      overflow: hidden;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.22) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.22) 50% 75%, transparent 75%) 0 0 / 58px 58px,
+        #9cca73;
+      min-height: 460px;
+    }
+
+    .river {
+      position: absolute;
+      inset: auto -20px 30px -20px;
+      height: 110px;
+      background: var(--river);
+      border-top: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      transform: rotate(-6deg);
+      box-shadow: inset 0 10px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .tiny-house,
+    .tiny-tent,
+    .tiny-workshop,
+    .tiny-wall,
+    .tiny-hero,
+    .tiny-tree,
+    .tiny-golem {
+      position: absolute;
+      border: 3px solid var(--line);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.13);
+    }
+
+    .tiny-house {
+      width: 86px;
+      height: 72px;
+      background: #e5b36b;
+      left: 20%;
+      top: 20%;
+    }
+
+    .tiny-house::before,
+    .tiny-workshop::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      right: -8px;
+      top: -32px;
+      height: 34px;
+      background: #c65f43;
+      border: 3px solid var(--line);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+
+    .tiny-tent {
+      width: 80px;
+      height: 56px;
+      left: 50%;
+      top: 42%;
+      background: #f3d56b;
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+
+    .tiny-workshop {
+      width: 96px;
+      height: 78px;
+      right: 18%;
+      top: 24%;
+      background: #8fa9ad;
+    }
+
+    .tiny-wall {
+      width: 190px;
+      height: 34px;
+      left: 33%;
+      bottom: 112px;
+      background: repeating-linear-gradient(90deg, #8b9a9d 0 26px, #6d7f82 26px 30px);
+    }
+
+    .tiny-hero {
+      width: 42px;
+      height: 50px;
+      left: 46%;
+      top: 60%;
+      background: #6b8fd6;
+      border-radius: 8px 8px 4px 4px;
+    }
+
+    .tiny-hero::before {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 22px;
+      left: 4px;
+      top: -18px;
+      border: 3px solid var(--line);
+      border-radius: 50% 50% 7px 7px;
+      background: #f0bf8e;
+    }
+
+    .tiny-tree {
+      width: 38px;
+      height: 52px;
+      background: #397b51;
+      border-radius: 22px 22px 8px 8px;
+    }
+
+    .tiny-tree::after {
+      content: "";
+      position: absolute;
+      left: 13px;
+      bottom: -20px;
+      width: 10px;
+      height: 20px;
+      border: 2px solid var(--line);
+      background: var(--wood-dark);
+    }
+
+    .tree-a {
+      left: 8%;
+      top: 52%;
+    }
+
+    .tree-b {
+      right: 8%;
+      top: 58%;
+    }
+
+    .tree-c {
+      right: 28%;
+      top: 9%;
+    }
+
+    .village-layout {
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .village-map {
+      position: relative;
+      min-height: 330px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px) 0 0 / 58px 58px,
+        linear-gradient(0deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px) 0 0 / 58px 58px,
+        #9fcb76;
+      overflow: hidden;
+    }
+
+    .plot-grid {
+      position: absolute;
+      inset: 24px 28px 88px 28px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      grid-template-rows: repeat(2, minmax(94px, 1fr));
+      gap: 16px;
+    }
+
+    .plot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      border: 3px dashed rgba(45, 70, 64, 0.76);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, 0.55);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .plot.complete {
+      border-style: solid;
+      background: rgba(255, 253, 247, 0.85);
+    }
+
+    .plot-icon {
+      width: 64px;
+      height: 48px;
+      position: relative;
+      border: 3px solid var(--line);
+      background: #dda866;
+    }
+
+    .plot-icon.house::before,
+    .plot-icon.store::before,
+    .plot-icon.work::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      right: -8px;
+      top: -24px;
+      height: 26px;
+      border: 3px solid var(--line);
+      background: #c65f43;
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+
+    .plot-icon.store {
+      background: #cfba79;
+    }
+
+    .plot-icon.work {
+      background: #8ea7a9;
+    }
+
+    .plot-icon.wall {
+      width: 88px;
+      height: 30px;
+      background: repeating-linear-gradient(90deg, #87949c 0 15px, #647178 15px 18px);
+    }
+
+    .mission-card {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .mission-card h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .mission-card p {
+      margin: 0;
+      color: var(--soft-ink);
+      line-height: 1.5;
+    }
+
+    .mission-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mission-pill {
+      min-height: 62px;
+      padding: 8px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      font-weight: 900;
+    }
+
+    .mission-pill.done {
+      background: #e7f5db;
+    }
+
+    .mission-pill.next {
+      background: #fff3b7;
+    }
+
+    .mission-pill.locked {
+      color: #6a7273;
+      background: #edf0ec;
+    }
+
+    .route-grid,
+    .recipe-grid,
+    .enemy-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .choice-card {
+      min-height: 94px;
+      padding: 12px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .choice-card.selected {
+      background: #fff3b7;
+    }
+
+    .choice-card.locked {
+      color: #697273;
+      background: #edf0ec;
+    }
+
+    .choice-card h3 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+    }
+
+    .choice-card p {
+      margin: 0;
+      line-height: 1.45;
+      color: var(--soft-ink);
+    }
+
+    .pack-board {
+      display: grid;
+      grid-template-columns: minmax(250px, 0.8fr) minmax(350px, 1.2fr);
+      gap: 14px;
+      min-height: 420px;
+    }
+
+    .source-pile,
+    .target-zone {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
+    }
+
+    .source-pile + .source-pile {
+      margin-top: 10px;
+    }
+
+    .cart {
+      min-height: 284px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #f2d19a;
+      padding: 12px;
+    }
+
+    .cart-bed {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 12px;
+      min-height: 150px;
+      padding: 14px;
+      border: 3px solid var(--wood-dark);
+      border-radius: var(--radius);
+      background: #e4bd7e;
+    }
+
+    .capacity-meter,
+    .hp-meter,
+    .build-meter {
+      height: 22px;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .capacity-meter span,
+    .hp-meter span,
+    .build-meter span {
+      display: block;
+      height: 100%;
+      background: var(--green);
+    }
+
+    .hp-meter.enemy span {
+      background: #d65b55;
+    }
+
+    .hp-meter.hero span {
+      background: #5d85d7;
+    }
+
+    .build-meter span {
+      background: var(--gold);
+    }
+
+    .slot-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cost-slot {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .left-resource {
+      display: grid;
+      gap: 10px;
+    }
+
+    .formula-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .feedback {
+      padding: 12px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbe8bf;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .feedback.ok {
+      background: #e3f5d7;
+    }
+
+    .workbench {
+      min-height: 250px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .bench-area {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
+    }
+
+    .equipment-card {
+      min-height: 82px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .tool-icon {
+      width: 44px;
+      height: 44px;
+      position: relative;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background: #f1d48a;
+    }
+
+    .tool-icon.sword::after {
+      content: "";
+      position: absolute;
+      left: 17px;
+      top: -6px;
+      width: 8px;
+      height: 42px;
+      border: 2px solid var(--line);
+      background: #cfd9df;
+      transform: rotate(40deg);
+    }
+
+    .tool-icon.axe::after {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 2px;
+      width: 8px;
+      height: 38px;
+      border: 2px solid var(--line);
+      background: var(--wood);
+      transform: rotate(-24deg);
+    }
+
+    .tool-icon.axe::before {
+      content: "";
+      position: absolute;
+      right: 4px;
+      top: 2px;
+      width: 22px;
+      height: 18px;
+      border: 2px solid var(--line);
+      border-radius: 50% 50% 40% 40%;
+      background: #a4b0b6;
+    }
+
+    .tool-icon.shield::after {
+      content: "";
+      position: absolute;
+      inset: 5px 8px 4px;
+      border: 2px solid var(--line);
+      border-radius: 16px 16px 20px 20px;
+      background: #67a2cf;
+    }
+
+    .battlefield {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      min-height: 524px;
+    }
+
+    .battle-status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .arena {
+      position: relative;
+      min-height: 250px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 50% 56%, rgba(255, 255, 255, 0.55), transparent 38%),
+        linear-gradient(180deg, #d5ebd0, #a8ca86);
+      overflow: hidden;
+    }
+
+    .arena .tiny-hero {
+      left: 26%;
+      top: 50%;
+    }
+
+    .tiny-golem {
+      width: 94px;
+      height: 104px;
+      right: 24%;
+      top: 30%;
+      border-radius: 24px 24px 12px 12px;
+      background: #8d9ca0;
+    }
+
+    .tiny-golem::before,
+    .tiny-golem::after {
+      content: "";
+      position: absolute;
+      top: 34px;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--line);
+      background: #fff2a6;
+      border-radius: 50%;
+    }
+
+    .tiny-golem::before {
+      left: 24px;
+    }
+
+    .tiny-golem::after {
+      right: 24px;
+    }
+
+    .battle-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .battle-actions .equipment-card {
+      grid-template-columns: auto 1fr;
+      min-height: 96px;
+    }
+
+    .result-layout {
+      grid-template-columns: minmax(350px, 1fr) minmax(320px, 0.8fr);
+      align-items: stretch;
+    }
+
+    .result-scene {
+      position: relative;
+      min-height: 330px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px) 0 0 / 58px 58px,
+        linear-gradient(0deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px) 0 0 / 58px 58px,
+        #a5d07a;
+      overflow: hidden;
+    }
+
+    .spark {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--line);
+      background: var(--gold);
+      transform: rotate(45deg);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .spark.one {
+      left: 18%;
+      top: 22%;
+    }
+
+    .spark.two {
+      right: 22%;
+      top: 28%;
+    }
+
+    .spark.three {
+      left: 56%;
+      bottom: 24%;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .setting-row {
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      font-weight: 800;
+    }
+
+    .toggle {
+      width: 58px;
+      height: 32px;
+      border: 3px solid var(--line);
+      border-radius: 20px;
+      background: #cfd8dc;
+      position: relative;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .toggle.on {
+      background: #97d779;
+    }
+
+    .toggle.on::after {
+      left: 29px;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--soft-ink);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+      body {
+        padding: 10px;
+      }
+
+      .app-header,
+      .title-scene,
+      .two-col,
+      .three-col,
+      .pack-board,
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .screen-tabs {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .battle-actions,
+      .battle-status,
+      .settings-grid,
+      .resource-bar,
+      .mission-list {
+        grid-template-columns: 1fr;
+      }
+
+      .viewport,
+      .screen,
+      .prototype {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="prototype">
+    <input checked type="radio" name="screen" id="tab-title">
+    <input type="radio" name="screen" id="tab-village">
+    <input type="radio" name="screen" id="tab-mission">
+    <input type="radio" name="screen" id="tab-explore">
+    <input type="radio" name="screen" id="tab-pack">
+    <input type="radio" name="screen" id="tab-build">
+    <input type="radio" name="screen" id="tab-craft">
+    <input type="radio" name="screen" id="tab-battle">
+    <input type="radio" name="screen" id="tab-result">
+
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1>数の開拓村</h1>
+          <p>素材をまとめて村を育てる</p>
+        </div>
+      </div>
+      <div class="status-strip" aria-label="進行状況">
+        <span class="badge">M05 荷車いっぱい</span>
+        <span class="badge alt">星 4</span>
+      </div>
+    </header>
+
+    <nav class="screen-tabs" aria-label="画面">
+      <label for="tab-title" tabindex="0">タイトル</label>
+      <label for="tab-village" tabindex="0">村</label>
+      <label for="tab-mission" tabindex="0">目標</label>
+      <label for="tab-explore" tabindex="0">探索</label>
+      <label for="tab-pack" tabindex="0">荷造り</label>
+      <label for="tab-build" tabindex="0">建築</label>
+      <label for="tab-craft" tabindex="0">工房</label>
+      <label for="tab-battle" tabindex="0">戦闘</label>
+      <label for="tab-result" tabindex="0">結果</label>
+    </nav>
+
+    <section class="viewport">
+      <article class="screen screen-title">
+        <div class="title-scene">
+          <div class="title-copy">
+            <span class="mini-label cool">野営地から石の村へ</span>
+            <h2>数の開拓村</h2>
+            <p>素材を集め、10の箱を作り、必要な数をそろえて村を育てる。</p>
+            <div class="title-actions">
+              <button class="action-button primary" type="button" disabled>はじめる</button>
+              <button class="action-button soft" type="button" disabled>つづき</button>
+              <button class="icon-button" type="button" aria-label="設定" title="設定" disabled>⚙</button>
+            </div>
+          </div>
+          <div class="world-preview" aria-label="村のプレビュー">
+            <div class="river"></div>
+            <div class="tiny-house"></div>
+            <div class="tiny-tent"></div>
+            <div class="tiny-workshop"></div>
+            <div class="tiny-wall"></div>
+            <div class="tiny-hero"></div>
+            <div class="tiny-tree tree-a"></div>
+            <div class="tiny-tree tree-b"></div>
+            <div class="tiny-tree tree-c"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen screen-village">
+        <div class="screen-grid village-layout">
+          <div class="resource-bar" aria-label="在庫">
+            <div class="resource-card">
+              <div class="resource-head"><span>木材</span><strong class="big-number">15</strong></div>
+              <div class="bundle-row">
+                <span class="crate10" aria-label="木材10箱"><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span></span>
+                <span class="bundle5" aria-label="木材5個"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+              </div>
+            </div>
+            <div class="resource-card">
+              <div class="resource-head"><span>石</span><strong class="big-number">8</strong></div>
+              <div class="bundle-row">
+                <span class="bundle5" aria-label="石5個"><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span></span>
+                <span class="token stone"></span><span class="token stone"></span><span class="token stone"></span>
+              </div>
+            </div>
+            <div class="resource-card">
+              <div class="resource-head"><span>食料</span><strong class="big-number">6</strong></div>
+              <div class="bundle-row">
+                <span class="bundle5" aria-label="食料5個"><span class="token food"></span><span class="token food"></span><span class="token food"></span><span class="token food"></span><span class="token food"></span></span>
+                <span class="token food"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="village-map">
+            <div class="plot-grid">
+              <div class="plot complete"><span class="plot-icon house"></span><span>家</span><small>完成</small></div>
+              <div class="plot complete"><span class="plot-icon store"></span><span>倉庫</span><small>容量40</small></div>
+              <div class="plot"><span class="plot-icon work"></span><span>工房予定地</span><small>M10</small></div>
+              <div class="plot"><span class="plot-icon wall"></span><span>防壁予定地</span><small>M14</small></div>
+            </div>
+            <div class="tiny-hero" aria-label="主人公"></div>
+          </div>
+
+          <div class="action-row">
+            <button class="action-button primary" type="button" disabled>探索</button>
+            <button class="action-button soft" type="button" disabled>建築</button>
+            <button class="action-button soft" type="button" disabled>工房</button>
+            <button class="action-button" type="button" disabled>次のミッション</button>
+            <button class="icon-button" type="button" aria-label="設定" title="設定" disabled>⚙</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="screen screen-mission">
+        <div class="screen-grid two-col">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>M05 荷車いっぱい</h2>
+              <span class="mini-label warn">8 + 7</span>
+            </div>
+            <div class="mission-card">
+              <h3>森の木材を全部持ち帰ろう</h3>
+              <p>木材8こと木材7こを荷車にまとめる。10の箱と5こで見る。</p>
+              <div class="equation"><span>8 + 7</span><span>=</span><span>10 + 5</span><span>=</span><span>15</span></div>
+            </div>
+            <div class="action-row">
+              <button class="action-button primary" type="button" disabled>はじめる</button>
+              <button class="action-button soft" type="button" disabled>もう一度</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>18ミッション</h2>
+              <span class="mini-label cool">順番解放</span>
+            </div>
+            <div class="mission-list">
+              <div class="mission-pill done">M01<br>3 + 2</div>
+              <div class="mission-pill done">M02<br>5 - 3</div>
+              <div class="mission-pill done">M03<br>4 + 3</div>
+              <div class="mission-pill done">M04<br>8 - 8</div>
+              <div class="mission-pill next">M05<br>10を作る</div>
+              <div class="mission-pill locked">M06<br>15 - 12</div>
+              <div class="mission-pill locked">M07<br>9 - 5</div>
+              <div class="mission-pill locked">M08<br>5 - 5</div>
+              <div class="mission-pill locked">M09<br>6 + 6</div>
+              <div class="mission-pill locked">M10<br>10をばらす</div>
+              <div class="mission-pill locked">M11<br>3と4</div>
+              <div class="mission-pill locked">M12<br>10 - 5 - 5</div>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-explore">
+        <div class="screen-grid three-col">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>探索先</h2>
+            </div>
+            <div class="route-grid">
+              <div class="choice-card">
+                <h3>村の近く</h3>
+                <p>木材・食料 1〜5</p>
+              </div>
+              <div class="choice-card selected">
+                <h3>かずの森</h3>
+                <p>木材8、木材7</p>
+              </div>
+              <div class="choice-card locked">
+                <h3>石の丘</h3>
+                <p>M09で解放</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>出発前</h2>
+              <span class="mini-label">荷車 15</span>
+            </div>
+            <div class="source-pile">
+              <strong>森の入口：木材8</strong>
+              <div class="bundle-row">
+                <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                <span class="token wood"></span><span class="token wood"></span><span class="token wood"></span>
+              </div>
+            </div>
+            <div class="source-pile">
+              <strong>森の奥：木材7</strong>
+              <div class="bundle-row">
+                <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                <span class="token wood"></span><span class="token wood"></span>
+              </div>
+            </div>
+            <div class="equation"><span>8 + 7</span><span>=</span><span>15</span><small>出発後に再生</small></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>食料</h2>
+              <span class="mini-label cool">無料探索あり</span>
+            </div>
+            <div class="resource-card">
+              <div class="resource-head"><span>いま</span><strong class="big-number">6</strong></div>
+              <div class="bundle-row"><span class="bundle5"><span class="token food"></span><span class="token food"></span><span class="token food"></span><span class="token food"></span><span class="token food"></span></span><span class="token food"></span></div>
+            </div>
+            <div class="equation"><span>6 - 1</span><span>=</span><span>5</span></div>
+            <div class="action-row">
+              <button class="action-button primary" type="button" disabled>荷造りへ</button>
+              <button class="action-button soft" type="button" disabled>もどる</button>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-pack">
+        <div class="screen-grid">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>目標：森の木材を全部持ち帰ろう</h2>
+              <span class="mini-label">荷車 15 / 15</span>
+            </div>
+            <div class="pack-board">
+              <div>
+                <div class="source-pile">
+                  <strong>木材8</strong>
+                  <div class="bundle-row">
+                    <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                    <span class="token wood"></span><span class="token wood"></span><span class="token wood"></span>
+                  </div>
+                </div>
+                <div class="source-pile">
+                  <strong>木材7 → 2 と 5</strong>
+                  <div class="bundle-row">
+                    <span class="token wood"></span><span class="token wood"></span>
+                    <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                  </div>
+                </div>
+                <div class="feedback ok">8こと2こで10の箱。のこりは5こ。</div>
+              </div>
+              <div class="cart">
+                <strong>荷台</strong>
+                <div class="cart-bed">
+                  <span class="crate10"><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span></span>
+                  <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                </div>
+                <div>
+                  <div class="capacity-meter" aria-label="荷車15/15"><span style="width:100%"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="equation"><span>8 + 7</span><span>=</span><span>8 + 2 + 5</span><span>=</span><span>10 + 5</span><span>=</span><span>15</span></div>
+            <div class="action-row">
+              <button class="icon-button" type="button" aria-label="もどす" title="もどす" disabled>↶</button>
+              <button class="action-button soft" type="button" disabled>5・10の枠</button>
+              <button class="action-button primary" type="button" disabled>出発する</button>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-build">
+        <div class="screen-grid two-col">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>倉庫を建てる</h2>
+              <span class="mini-label warn">木材12 石3</span>
+            </div>
+            <div class="left-resource">
+              <div class="resource-card">
+                <div class="resource-head"><span>所持 木材</span><strong class="big-number">15</strong></div>
+                <div class="bundle-row">
+                  <span class="crate10"><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot"></span></span>
+                  <span class="bundle5"><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span><span class="token wood"></span></span>
+                </div>
+              </div>
+              <div class="resource-card">
+                <div class="resource-head"><span>所持 石</span><strong class="big-number">8</strong></div>
+                <div class="bundle-row">
+                  <span class="bundle5"><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span></span>
+                  <span class="token stone"></span><span class="token stone"></span><span class="token stone"></span>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">
+              <h2>建築場所</h2>
+              <span class="mini-label cool">完成後 木材3 石5</span>
+            </div>
+            <div class="slot-stack">
+              <div class="cost-slot">
+                <strong>木材</strong>
+                <div class="build-meter"><span style="width:100%"></span></div>
+                <strong>12 / 12</strong>
+              </div>
+              <div class="cost-slot">
+                <strong>石</strong>
+                <div class="build-meter"><span style="width:100%"></span></div>
+                <strong>3 / 3</strong>
+              </div>
+            </div>
+            <div class="feedback ok">倉庫に必要な数がそろっています。星のボーナス対象です。</div>
+            <div class="formula-stack">
+              <div class="equation"><span>15 - 12</span><span>=</span><span>3</span></div>
+              <div class="equation"><span>8 - 3</span><span>=</span><span>5</span></div>
+            </div>
+            <div class="action-row">
+              <button class="icon-button" type="button" aria-label="もどす" title="もどす" disabled>↶</button>
+              <button class="action-button soft" type="button" disabled>ヒント</button>
+              <button class="action-button primary" type="button" disabled>着工する</button>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-craft">
+        <div class="screen-grid two-col">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>工房</h2>
+              <span class="mini-label">レシピ</span>
+            </div>
+            <div class="recipe-grid">
+              <div class="equipment-card">
+                <span class="tool-icon sword"></span>
+                <div><strong>木の剣</strong><br>木材5 / 攻撃5</div>
+              </div>
+              <div class="equipment-card">
+                <span class="tool-icon axe"></span>
+                <div><strong>石の斧</strong><br>木材3 石4 / 攻撃7</div>
+              </div>
+              <div class="equipment-card">
+                <span class="tool-icon shield"></span>
+                <div><strong>木の盾</strong><br>木材6 / 防御2</div>
+              </div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">
+              <h2>石の斧を作る</h2>
+              <span class="mini-label cool">7ダメージ</span>
+            </div>
+            <div class="workbench">
+              <div class="bench-area">
+                <strong>投入</strong>
+                <div class="bundle-row">
+                  <span class="token wood"></span><span class="token wood"></span><span class="token wood"></span>
+                  <span class="token stone"></span><span class="token stone"></span><span class="token stone"></span><span class="token stone"></span>
+                </div>
+              </div>
+              <div class="bench-area">
+                <strong>残り</strong>
+                <div class="equation"><span>木材9 - 3 = 6</span></div>
+                <div class="equation"><span>石8 - 4 = 4</span></div>
+              </div>
+            </div>
+            <div class="feedback">端材3こは素材1こに戻せます。工房完成後に使えます。</div>
+            <div class="action-row">
+              <button class="icon-button" type="button" aria-label="もどす" title="もどす" disabled>↶</button>
+              <button class="action-button primary" type="button" disabled>製作する</button>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-battle">
+        <div class="battlefield">
+          <div class="battle-status">
+            <section class="panel">
+              <div class="panel-title">
+                <h2>主人公HP 12 / 15</h2>
+                <span class="mini-label cool">盾2回</span>
+              </div>
+              <div class="hp-meter hero"><span style="width:80%"></span></div>
+            </section>
+            <section class="panel">
+              <div class="panel-title">
+                <h2>いしゴーレムHP 14 / 14</h2>
+                <span class="mini-label warn">次の攻撃 3</span>
+              </div>
+              <div class="hp-meter enemy"><span style="width:100%"></span></div>
+            </section>
+          </div>
+          <div class="arena" aria-label="戦闘場面">
+            <div class="tiny-hero"></div>
+            <div class="tiny-golem"></div>
+          </div>
+          <section class="panel">
+            <div class="battle-actions">
+              <div class="equipment-card"><span class="tool-icon sword"></span><div><strong>木の剣</strong><br>5</div></div>
+              <div class="equipment-card"><span class="tool-icon axe"></span><div><strong>石の斧</strong><br>7</div></div>
+              <div class="equipment-card"><span class="tool-icon shield"></span><div><strong>盾</strong><br>2へらす</div></div>
+              <div class="equipment-card"><span class="token food"></span><div><strong>食料袋</strong><br>5回復</div></div>
+            </div>
+            <div class="action-row">
+              <div class="equation"><span>予測</span><span>14 - 7</span><span>=</span><span>7</span></div>
+              <div class="equation"><span>7 + 7</span><span>=</span><span>14</span><small>ぴったり候補</small></div>
+              <button class="action-button primary" type="button" disabled>実行する</button>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <article class="screen screen-result">
+        <div class="screen-grid result-layout">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>結果</h2>
+              <span class="mini-label cool">村へ反映</span>
+            </div>
+            <div class="result-scene">
+              <div class="spark one"></div>
+              <div class="spark two"></div>
+              <div class="spark three"></div>
+              <div class="tiny-house"></div>
+              <div class="tiny-workshop"></div>
+              <div class="tiny-hero"></div>
+            </div>
+            <div class="action-row">
+              <button class="action-button primary" type="button" disabled>村へ戻る</button>
+              <button class="action-button soft" type="button" disabled>式を見る</button>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">
+              <h2>式の再生</h2>
+              <span class="mini-label warn">1.5〜3秒</span>
+            </div>
+            <div class="formula-stack">
+              <div class="equation"><span>木材8 + 木材7</span></div>
+              <div class="equation"><span>= 木材10 + 木材5</span></div>
+              <div class="equation"><span>= 木材15</span></div>
+            </div>
+            <div class="feedback ok">木材15こを村に持ち帰りました。</div>
+            <div class="settings-grid">
+              <div class="setting-row"><span>音声読み上げ</span><span class="toggle on"></span></div>
+              <div class="setting-row"><span>動きを減らす</span><span class="toggle"></span></div>
+              <div class="setting-row"><span>タップ移動</span><span class="toggle on"></span></div>
+              <div class="setting-row"><span>大きい文字</span><span class="toggle"></span></div>
+            </div>
+            <p class="footer-note">村のきろく：星4、木材15、M05クリア。</p>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10のみなと ゲームモード</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #edf4f5;
+      --surface: #ffffff;
+      --ink: #17242b;
+      --muted: #5d6b75;
+      --line: #c8d5dc;
+      --harbor: #256b7a;
+      --harbor-dark: #184752;
+      --light: #f4b942;
+      --energy: #e86d47;
+      --energy-alt: #2d9f90;
+      --empty: #f5f9fb;
+      --focus: rgba(45, 159, 144, 0.38);
+      --shadow: 0 18px 48px rgba(23, 36, 43, 0.14);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+        "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(160deg, rgba(37, 107, 122, 0.14), transparent 42%),
+        linear-gradient(135deg, #edf4f5 0%, #f9fbfc 54%, #e5eff2 100%);
+      color: var(--ink);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page-links {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      display: inline-flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+    }
+
+    .page-jump {
+      min-height: 48px;
+      border: 1px solid #b8c6cf;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      box-shadow: 0 10px 26px rgba(23, 36, 43, 0.12);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .page-jump:hover {
+      background: #ffffff;
+      border-color: #7d929e;
+    }
+
+    .page-jump:focus-visible,
+    .icon-button:focus-visible,
+    .action-button:focus-visible,
+    .energy:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .game-shell {
+      width: min(1120px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(14px, 3vw, 32px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+    }
+
+    .top-bar,
+    .control-bar {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 8px 26px rgba(23, 36, 43, 0.08);
+    }
+
+    .top-bar {
+      min-height: 64px;
+      padding: 10px clamp(12px, 2vw, 18px);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding-right: 360px;
+    }
+
+    .stage-title {
+      text-align: center;
+      min-width: 0;
+    }
+
+    .stage-title p,
+    .mission-card p,
+    .equation-panel p,
+    .feedback-panel p {
+      margin: 0;
+    }
+
+    .stage-kicker {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stage-name {
+      margin: 2px 0 0;
+      font-size: clamp(18px, 2.4vw, 26px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .top-actions,
+    .bottom-actions {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .icon-button,
+    .action-button {
+      min-height: 48px;
+      border: 1px solid #b8c6cf;
+      border-radius: 8px;
+      background: #f8fbfc;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(23, 36, 43, 0.07);
+    }
+
+    .icon-button {
+      width: 48px;
+      padding: 0;
+      font-size: 20px;
+    }
+
+    .action-button.primary {
+      background: var(--harbor);
+      border-color: var(--harbor-dark);
+      color: #ffffff;
+    }
+
+    .icon-button:disabled,
+    .action-button:disabled {
+      cursor: default;
+      opacity: 0.68;
+      box-shadow: none;
+    }
+
+    .problem-area {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+    }
+
+    .mission-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 2.2vw, 22px);
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(170px, 0.5fr) auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mission-text {
+      min-width: 0;
+    }
+
+    .mission-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .mission {
+      margin: 4px 0 0;
+      font-size: clamp(16px, 2vw, 22px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .target-count {
+      min-width: 94px;
+      min-height: 72px;
+      border: 2px solid rgba(37, 107, 122, 0.35);
+      border-radius: 8px;
+      background: #f1faf9;
+      display: grid;
+      place-items: center;
+      color: var(--harbor-dark);
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mission-visual {
+      min-width: 0;
+      border: 2px solid rgba(37, 107, 122, 0.18);
+      border-radius: 8px;
+      background: #f8fcfc;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+    }
+
+    .goal-icon {
+      width: 54px;
+      height: 72px;
+      position: relative;
+      display: grid;
+      justify-items: center;
+      align-content: end;
+    }
+
+    .goal-icon::before {
+      content: "";
+      width: 36px;
+      height: 24px;
+      border: 3px solid #6c8790;
+      border-bottom: 0;
+      border-radius: 10px 10px 0 0;
+      background: #fff2bf;
+    }
+
+    .goal-icon::after {
+      content: "";
+      width: 44px;
+      height: 44px;
+      border: 3px solid #6c8790;
+      border-top: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          #ffffff 0 12px,
+          #e8f0f2 12px 24px
+        );
+    }
+
+    .goal-slots {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .goal-slot {
+      min-width: 0;
+      aspect-ratio: 1;
+      border: 2px dashed #99adb7;
+      border-radius: 8px;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+    }
+
+    .goal-slot.is-filled {
+      border-style: solid;
+      border-color: rgba(232, 109, 71, 0.62);
+      background: #fff7f2;
+    }
+
+    .goal-slot.is-filled::before {
+      content: "";
+      width: 72%;
+      aspect-ratio: 1;
+      border: 2px solid rgba(137, 65, 39, 0.42);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.92) 0 10%, transparent 32%),
+        linear-gradient(145deg, #ffbd9d, var(--energy));
+      box-shadow:
+        inset -4px -5px 8px rgba(111, 58, 35, 0.12),
+        inset 3px 3px 6px rgba(255, 255, 255, 0.66);
+    }
+
+    .goal-slot.is-empty::before {
+      content: "";
+      width: 42%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px dashed #99adb7;
+      background: #ffffff;
+    }
+
+    .playfield {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.88fr) minmax(360px, 1.12fr);
+      gap: 14px;
+    }
+
+    .world-panel,
+    .math-panel,
+    .equation-panel,
+    .feedback-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 12px 34px rgba(23, 36, 43, 0.1);
+    }
+
+    .world-panel {
+      min-height: 360px;
+      padding: clamp(16px, 2.5vw, 26px);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .island-scene {
+      position: relative;
+      min-height: 260px;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, #d9f0f2 0%, #edf8f7 48%, #c7e6dd 49%, #d9efe5 100%);
+      border: 1px solid #b8d1d4;
+      display: grid;
+      place-items: center;
+    }
+
+    .scene-goal {
+      position: absolute;
+      left: 50%;
+      top: 16px;
+      z-index: 2;
+      width: min(230px, 72%);
+      border: 2px solid rgba(37, 107, 122, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 8px;
+      transform: translateX(-50%);
+      box-shadow: 0 10px 22px rgba(23, 36, 43, 0.08);
+    }
+
+    .scene-goal .goal-slots {
+      gap: 5px;
+    }
+
+    .island {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: 22px;
+      height: 72px;
+      border-radius: 50% 50% 42% 42%;
+      background: #70a96f;
+      box-shadow: inset 0 -12px 0 rgba(45, 91, 45, 0.16);
+    }
+
+    .lighthouse {
+      position: relative;
+      z-index: 1;
+      width: 92px;
+      height: 176px;
+      display: grid;
+      justify-items: center;
+      align-content: end;
+    }
+
+    .beam {
+      width: 144px;
+      height: 44px;
+      border-radius: 999px;
+      background: rgba(244, 185, 66, 0.22);
+      border: 2px dashed rgba(137, 103, 22, 0.32);
+      display: grid;
+      place-items: center;
+      color: #70520f;
+      font-weight: 900;
+    }
+
+    .tower {
+      width: 72px;
+      height: 118px;
+      border: 3px solid #6c8790;
+      border-bottom: 0;
+      border-radius: 12px 12px 0 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          #ffffff 0 20px,
+          #e8f0f2 20px 38px
+        );
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      padding-top: 12px;
+    }
+
+    .lamp {
+      width: 38px;
+      height: 26px;
+      border-radius: 8px;
+      border: 2px solid #6c8790;
+      background: #fff2bf;
+    }
+
+    .result-state {
+      min-height: 72px;
+      border: 1px solid #cfe0e5;
+      border-radius: 8px;
+      background: #f8fbfc;
+      display: grid;
+      align-content: center;
+      gap: 2px;
+      padding: 12px;
+    }
+
+    .state-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .state-text {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .math-panel {
+      min-height: 360px;
+      padding: clamp(14px, 2.4vw, 24px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .math-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .math-title {
+      margin: 0;
+      font-size: clamp(20px, 2.6vw, 30px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .math-note {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .workbench {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(220px, 0.86fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .ten-frame-card,
+    .hand-card {
+      min-width: 0;
+      border: 1px solid #cfe0e5;
+      border-radius: 8px;
+      background: #f8fbfc;
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .count-pill {
+      min-width: 48px;
+      min-height: 32px;
+      border-radius: 999px;
+      background: #eaf2f4;
+      color: var(--ink);
+      display: inline-grid;
+      place-items: center;
+      padding: 0 10px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ten-frame {
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      column-gap: 8px;
+      row-gap: 12px;
+      padding-top: 10px;
+      border-top: 3px solid rgba(37, 107, 122, 0.28);
+    }
+
+    .frame-slot {
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 1;
+      border-radius: 8px;
+    }
+
+    .frame-slot {
+      border: 2px solid #aebfc8;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(238, 246, 248, 0.9));
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .frame-slot.is-filled {
+      border-color: rgba(232, 109, 71, 0.62);
+      background: #fff7f2;
+    }
+
+    .frame-slot.is-empty::after {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px dashed #9fb1bb;
+      background: #ffffff;
+    }
+
+    .energy {
+      position: relative;
+      display: inline-block;
+      width: min(78%, 42px);
+      height: min(78%, 42px);
+      overflow: hidden;
+      border: 2px solid rgba(137, 65, 39, 0.42);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.92) 0 10%, transparent 32%),
+        linear-gradient(145deg, #ffbd9d, var(--energy));
+      box-shadow:
+        inset -5px -6px 10px rgba(111, 58, 35, 0.14),
+        inset 4px 4px 8px rgba(255, 255, 255, 0.66),
+        0 4px 9px rgba(23, 36, 43, 0.16);
+    }
+
+    .energy.alt {
+      border-color: rgba(33, 113, 100, 0.48);
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.9) 0 10%, transparent 32%),
+        linear-gradient(145deg, #8be1d2, var(--energy-alt));
+    }
+
+    .energy.alt::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 8px;
+      bottom: 8px;
+      width: 4px;
+      border-radius: 999px;
+      background: rgba(16, 73, 67, 0.34);
+      transform: translateX(-50%);
+    }
+
+    .hand-groups {
+      align-self: center;
+      display: grid;
+      gap: 12px;
+    }
+
+    .group {
+      min-width: 0;
+      border: 2px solid #b8c6cf;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .group.is-primary-target {
+      border-color: rgba(232, 109, 71, 0.68);
+      background: #fffaf7;
+      box-shadow: 0 0 0 4px rgba(232, 109, 71, 0.1);
+    }
+
+    .group-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .energy-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .energy-row .energy {
+      width: min(100%, 48px);
+      min-width: 0;
+      min-height: 0;
+      height: auto;
+      aspect-ratio: 1;
+      justify-self: center;
+    }
+
+    .equation-panel {
+      min-height: 96px;
+      padding: 14px clamp(14px, 2.4vw, 22px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 0.62fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .equation {
+      min-height: 66px;
+      border-radius: 8px;
+      background: #f8fbfc;
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      font-size: clamp(24px, 3.5vw, 38px);
+      font-weight: 900;
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .feedback-panel {
+      padding: 12px 14px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      box-shadow: none;
+    }
+
+    .feedback-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .feedback-text {
+      font-size: 16px;
+      line-height: 1.42;
+      font-weight: 800;
+    }
+
+    .control-bar {
+      min-height: 72px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control-spacer {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    @media (max-width: 820px) {
+      .page-links {
+        position: static;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 10px 0 0;
+      }
+
+      .page-jump {
+        width: 100%;
+      }
+
+      .game-shell {
+        min-height: 100vh;
+        padding: 10px;
+      }
+
+      .top-bar {
+        grid-template-columns: 1fr;
+        padding-right: 12px;
+      }
+
+      .top-actions,
+      .bottom-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .mission-card,
+      .playfield,
+      .workbench,
+      .equation-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .mission-card {
+        text-align: center;
+        justify-items: center;
+      }
+
+      .mission-visual {
+        width: 100%;
+      }
+
+      .world-panel,
+      .math-panel {
+        min-height: auto;
+      }
+
+      .island-scene {
+        min-height: 210px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .ten-frame {
+        gap: 6px;
+      }
+
+      .energy-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .action-button {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell" aria-labelledby="gameTitle">
+    <nav class="page-links" aria-label="ページいどう">
+      <a class="page-jump" href="index.html">けいさんき</a>
+      <a class="page-jump" href="game2.html">ゲーム2</a>
+      <a class="page-jump" href="game3.html">ゲーム3</a>
+      <a class="page-jump" href="game4.html">ゲーム4</a>
+    </nav>
+
+    <header class="top-bar">
+      <button class="action-button" type="button" aria-label="まえのがめんへもどる" disabled>もどる</button>
+      <div class="stage-title">
+        <p class="stage-kicker">しま 1-1</p>
+        <h1 class="stage-name" id="gameTitle">10のみなと</h1>
+      </div>
+      <div class="top-actions" aria-label="せってい">
+        <button class="icon-button" type="button" aria-label="おとのせってい" disabled>♪</button>
+        <button class="icon-button" type="button" aria-label="ゲームのせってい" disabled>⚙</button>
+      </div>
+    </header>
+
+    <section class="problem-area" aria-label="もんだい">
+      <div class="mission-card">
+        <div class="mission-visual" role="img" aria-label="15このうち8こあります。あきが7こあります。">
+          <div class="goal-icon" aria-hidden="true"></div>
+          <div class="goal-slots" aria-hidden="true">
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-filled"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+            <span class="goal-slot is-empty"></span>
+          </div>
+        </div>
+        <div class="mission-text">
+          <p class="mission-label">いきさき</p>
+          <p class="mission">とうだいをうごかすには 15こ ひつよう</p>
+        </div>
+        <div class="target-count" aria-label="ひつようなかずは15こ">15</div>
+      </div>
+
+      <div class="playfield">
+        <section class="world-panel" aria-label="しま と とうだい">
+          <div class="island-scene" aria-hidden="true">
+            <div class="scene-goal">
+              <div class="goal-slots">
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-filled"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+                <span class="goal-slot is-empty"></span>
+              </div>
+            </div>
+            <div class="lighthouse">
+              <div class="beam">15</div>
+              <div class="tower">
+                <div class="lamp"></div>
+              </div>
+            </div>
+            <div class="island"></div>
+          </div>
+          <div class="result-state" aria-live="polite">
+            <span class="state-label">いまのようす</span>
+            <span class="state-text">とうだいには 8こ はいっています。あと7こ ひつようです。</span>
+          </div>
+        </section>
+
+        <section class="math-panel" aria-label="かずをうごかす">
+          <div class="math-header">
+            <h2 class="math-title">10をつくる</h2>
+            <span class="math-note">8に、あと2で10</span>
+          </div>
+
+          <div class="workbench">
+            <section class="ten-frame-card" aria-label="10フレーム">
+              <div class="card-heading">
+                <span>10フレーム</span>
+                <span class="count-pill" aria-label="はいっているかずは8こ">8こ</span>
+              </div>
+              <div class="ten-frame" role="img" aria-label="10マスのうち8マスがうまり、あきが2マスあります">
+                <span class="frame-slot is-filled"><span class="energy"></span></span>
+                <span class="frame-slot is-filled"><span class="energy"></span></span>
+                <span class="frame-slot is-filled"><span class="energy"></span></span>
+                <span class="frame-slot is-filled"><span class="energy"></span></span>
+                <span class="frame-slot is-filled"><span class="energy"></span></span>
+                <span class="frame-slot is-filled"><span class="energy alt"></span></span>
+                <span class="frame-slot is-filled"><span class="energy alt"></span></span>
+                <span class="frame-slot is-filled"><span class="energy alt"></span></span>
+                <span class="frame-slot is-empty"></span>
+                <span class="frame-slot is-empty"></span>
+              </div>
+            </section>
+
+            <section class="hand-card" aria-label="てもとのかず">
+              <div class="card-heading">
+                <span>てもとのかず</span>
+                <span class="count-pill" aria-label="てもとのかずは7こ">7こ</span>
+              </div>
+              <div class="hand-groups">
+                <div class="group is-primary-target" role="group" aria-label="さいしょにわける、てもとの7このエネルギーグループ">
+                  <div class="group-label">
+                    <span>わけるかず</span>
+                    <span class="count-pill">7こ</span>
+                  </div>
+                  <div class="energy-row" aria-hidden="true">
+                    <span class="energy"></span>
+                    <span class="energy"></span>
+                    <span class="energy"></span>
+                    <span class="energy"></span>
+                    <span class="energy"></span>
+                    <span class="energy alt"></span>
+                    <span class="energy alt"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+
+      <section class="equation-panel" aria-label="しきとフィードバック">
+        <div>
+          <p class="feedback-label">しき</p>
+          <div class="equation" aria-label="しき、8たす7">8 + 7</div>
+        </div>
+        <div class="feedback-panel" aria-live="polite">
+          <p class="feedback-label">みるところ</p>
+          <p class="feedback-text">10フレームには あきが2マスあります。</p>
+        </div>
+      </section>
+    </section>
+
+    <footer class="control-bar" aria-label="そうさ">
+      <span class="control-spacer">タイマーなし</span>
+      <div class="bottom-actions">
+        <button class="action-button" type="button" disabled>もとにもどす</button>
+        <button class="action-button" type="button" disabled>やりなおす</button>
+        <button class="action-button" type="button" disabled>ヒント</button>
+        <button class="action-button primary" type="button" disabled>けってい</button>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

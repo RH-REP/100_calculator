@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ゲーム2 リズムボタン</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef3f6;
+      --surface: #ffffff;
+      --ink: #17242b;
+      --muted: #60707a;
+      --line: #c9d5dc;
+      --harbor: #256b7a;
+      --harbor-dark: #184752;
+      --coral: #e76f51;
+      --amber: #f4b942;
+      --mint: #2a9d8f;
+      --violet: #6f6ab7;
+      --blue: #477ca8;
+      --focus: rgba(42, 157, 143, 0.38);
+      --shadow: 0 18px 48px rgba(23, 36, 43, 0.14);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+        "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(160deg, rgba(42, 157, 143, 0.14), transparent 42%),
+        linear-gradient(135deg, #eef3f6 0%, #f9fbfc 52%, #e5eef2 100%);
+      color: var(--ink);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page-links {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      display: inline-flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+    }
+
+    .page-jump {
+      min-height: 48px;
+      border: 1px solid #b8c6cf;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      box-shadow: 0 10px 26px rgba(23, 36, 43, 0.12);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .page-jump:hover {
+      background: #ffffff;
+      border-color: #7d929e;
+    }
+
+    .page-jump:focus-visible,
+    .icon-button:focus-visible,
+    .action-button:focus-visible,
+    .song-button:focus-visible,
+    .tap-button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .game-shell {
+      width: min(1120px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(14px, 3vw, 32px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+    }
+
+    .top-bar,
+    .control-bar,
+    .song-panel,
+    .stage-panel,
+    .score-panel,
+    .beat-panel,
+    .feedback-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .top-bar,
+    .control-bar {
+      box-shadow: 0 8px 26px rgba(23, 36, 43, 0.08);
+    }
+
+    .top-bar {
+      min-height: 64px;
+      padding: 10px clamp(12px, 2vw, 18px);
+      padding-right: 360px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stage-title {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .stage-title p,
+    .song-panel p,
+    .score-card p,
+    .feedback-panel p {
+      margin: 0;
+    }
+
+    .stage-kicker,
+    .panel-label,
+    .score-label,
+    .feedback-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .stage-name {
+      margin: 2px 0 0;
+      font-size: clamp(18px, 2.4vw, 26px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .top-actions,
+    .bottom-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .action-button,
+    .song-button {
+      min-height: 48px;
+      border: 1px solid #b8c6cf;
+      border-radius: 8px;
+      background: #f8fbfc;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(23, 36, 43, 0.07);
+    }
+
+    .icon-button {
+      width: 48px;
+      padding: 0;
+      font-size: 20px;
+    }
+
+    .action-button.primary {
+      background: var(--harbor);
+      border-color: var(--harbor-dark);
+      color: #ffffff;
+    }
+
+    .action-button:disabled {
+      cursor: default;
+      opacity: 0.62;
+      box-shadow: none;
+    }
+
+    .game-area {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+    }
+
+    .song-panel {
+      padding: clamp(14px, 2vw, 18px);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .song-list {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(118px, 1fr));
+      gap: 8px;
+    }
+
+    .song-button {
+      min-width: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    .song-button.is-selected {
+      border-color: var(--harbor);
+      background: #eef9f7;
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.14);
+    }
+
+    .song-name,
+    .song-meta {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .song-name {
+      font-weight: 900;
+    }
+
+    .song-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .playfield {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.9fr) minmax(380px, 1.1fr);
+      gap: 14px;
+    }
+
+    .stage-panel,
+    .score-panel {
+      min-height: 400px;
+      box-shadow: 0 12px 34px rgba(23, 36, 43, 0.1);
+    }
+
+    .stage-panel {
+      padding: clamp(18px, 3vw, 30px);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .tap-stage {
+      width: min(430px, 100%);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid #b8d1d4;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(244, 185, 66, 0.32), transparent 28%),
+        conic-gradient(from 0deg, #d9f0f2, #f2f9f7, #e8f2de, #d9f0f2);
+      display: grid;
+      place-items: center;
+      position: relative;
+      box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.42);
+    }
+
+    .pulse-ring {
+      position: absolute;
+      inset: 12%;
+      border: 4px solid rgba(37, 107, 122, 0.18);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: scale(var(--pulse, 1));
+      transition: transform 80ms linear, border-color 120ms ease;
+    }
+
+    .hand-cue {
+      position: absolute;
+      top: 7%;
+      right: 16%;
+      z-index: 4;
+      width: 92px;
+      height: 126px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-18px) rotate(-10deg);
+      transform-origin: 50% 92%;
+      transition: opacity 140ms ease, transform 120ms ease;
+    }
+
+    .hand-cue::before,
+    .hand-cue::after,
+    .hand-palm,
+    .hand-finger {
+      content: "";
+      position: absolute;
+      background: #ffd4a8;
+      border: 2px solid rgba(116, 74, 44, 0.34);
+      box-shadow: 0 7px 14px rgba(23, 36, 43, 0.12);
+    }
+
+    .hand-cue::before {
+      left: 38px;
+      top: 0;
+      width: 24px;
+      height: 74px;
+      border-radius: 999px;
+    }
+
+    .hand-cue::after {
+      left: 47px;
+      top: 58px;
+      width: 18px;
+      height: 42px;
+      border-radius: 999px;
+      transform: rotate(20deg);
+    }
+
+    .hand-palm {
+      left: 20px;
+      top: 58px;
+      width: 56px;
+      height: 52px;
+      border-radius: 20px 20px 26px 26px;
+    }
+
+    .hand-finger {
+      left: 22px;
+      top: 58px;
+      width: 18px;
+      height: 40px;
+      border-radius: 999px;
+      transform: rotate(-18deg);
+    }
+
+    .tap-stage.is-beat .pulse-ring {
+      border-color: rgba(231, 111, 81, 0.58);
+    }
+
+    .tap-stage.is-demo .hand-cue {
+      opacity: 1;
+    }
+
+    .tap-stage.is-demo-tap .hand-cue {
+      transform: translateY(24px) rotate(-10deg) scale(0.96);
+    }
+
+    .tap-stage.is-demo-tap .tap-button {
+      transform: scale(0.95);
+      filter: brightness(1.06);
+    }
+
+    .tap-button {
+      position: relative;
+      z-index: 3;
+      width: min(220px, 58%);
+      aspect-ratio: 1;
+      border: 4px solid rgba(24, 71, 82, 0.72);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.86) 0 10%, transparent 31%),
+        linear-gradient(145deg, #ffbd9d, var(--coral));
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+      cursor: pointer;
+      box-shadow:
+        inset -8px -10px 18px rgba(92, 48, 32, 0.18),
+        inset 7px 7px 16px rgba(255, 255, 255, 0.42),
+        0 16px 28px rgba(23, 36, 43, 0.18);
+      transition: transform 90ms ease, filter 120ms ease;
+    }
+
+    .tap-button:active,
+    .tap-button.is-hit {
+      transform: scale(0.96);
+      filter: brightness(1.04);
+    }
+
+    .score-panel {
+      padding: clamp(14px, 2.4vw, 24px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .score-card {
+      min-height: 88px;
+      border: 1px solid #cfe0e5;
+      border-radius: 8px;
+      background: #f8fbfc;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 12px;
+    }
+
+    .score-value {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .judgement {
+      min-height: 150px;
+      border: 1px solid #cfe0e5;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 251, 252, 0.9));
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      text-align: center;
+      color: var(--harbor-dark);
+      font-size: clamp(36px, 7vw, 72px);
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .judgement[data-rank="perfect"] {
+      color: var(--coral);
+    }
+
+    .judgement[data-rank="good"] {
+      color: var(--mint);
+    }
+
+    .judgement[data-rank="miss"] {
+      color: var(--violet);
+    }
+
+    .beat-panel {
+      min-height: 112px;
+      padding: 14px clamp(14px, 2.4vw, 22px);
+      display: grid;
+      gap: 12px;
+      box-shadow: 0 12px 34px rgba(23, 36, 43, 0.1);
+    }
+
+    .beat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .beat-strip {
+      display: grid;
+      grid-template-columns: repeat(16, minmax(26px, 1fr));
+      gap: 6px;
+    }
+
+    .beat-progress {
+      height: 14px;
+      border: 1px solid #c5d3db;
+      border-radius: 999px;
+      background: #e4edf1;
+      overflow: hidden;
+    }
+
+    .beat-progress-fill {
+      width: var(--beat-progress, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--harbor), var(--mint), var(--amber));
+      transition: width 60ms linear;
+    }
+
+    .sync-readout {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .beat-cell {
+      min-height: 44px;
+      border: 2px solid #aebfc8;
+      border-radius: 8px;
+      background: #f8fbfc;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .beat-cell.is-active {
+      border-color: var(--amber);
+      background: #fff8e4;
+      transform: translateY(-3px);
+    }
+
+    .beat-cell.is-target {
+      box-shadow: inset 0 -5px 0 rgba(231, 111, 81, 0.34);
+    }
+
+    .beat-cell.is-demo {
+      border-color: rgba(231, 111, 81, 0.68);
+      background: #fff3ed;
+      color: #793e2c;
+    }
+
+    .beat-cell.is-hit {
+      border-color: rgba(42, 157, 143, 0.7);
+      background: #effaf8;
+      color: #165e55;
+    }
+
+    .beat-cell.is-miss {
+      border-color: rgba(111, 106, 183, 0.58);
+      background: #f3f2fb;
+      color: #4b4782;
+    }
+
+    .feedback-panel {
+      min-height: 74px;
+      padding: 12px 14px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      box-shadow: none;
+    }
+
+    .feedback-text {
+      font-size: 16px;
+      line-height: 1.42;
+      font-weight: 800;
+    }
+
+    .source-line {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .source-line a {
+      color: var(--harbor-dark);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    .control-bar {
+      min-height: 72px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control-spacer {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      .page-links {
+        position: static;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 10px 0 0;
+      }
+
+      .page-jump {
+        width: 100%;
+      }
+
+      .game-shell {
+        min-height: 100vh;
+        padding: 10px;
+      }
+
+      .top-bar {
+        grid-template-columns: 1fr;
+        padding-right: 12px;
+      }
+
+      .top-actions,
+      .bottom-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .song-panel,
+      .playfield {
+        grid-template-columns: 1fr;
+      }
+
+      .song-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stage-panel,
+      .score-panel {
+        min-height: auto;
+      }
+
+      .tap-stage {
+        width: min(360px, 100%);
+      }
+
+      .beat-strip {
+        grid-template-columns: repeat(8, minmax(30px, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .score-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .song-list {
+        grid-template-columns: 1fr;
+      }
+
+      .action-button {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell" aria-labelledby="gameTitle">
+    <nav class="page-links" aria-label="ページいどう">
+      <a class="page-jump" href="index.html">けいさんき</a>
+      <a class="page-jump" href="game.html">ゲーム1</a>
+      <a class="page-jump" href="game3.html">ゲーム3</a>
+      <a class="page-jump" href="game4.html">ゲーム4</a>
+    </nav>
+
+    <header class="top-bar">
+      <button class="action-button" id="backButton" type="button" aria-label="前の画面へ戻る">もどる</button>
+      <div class="stage-title">
+        <p class="stage-kicker">ゲーム2</p>
+        <h1 class="stage-name" id="gameTitle">リズムボタン</h1>
+      </div>
+      <div class="top-actions" aria-label="せってい">
+        <button class="icon-button" id="soundButton" type="button" aria-label="音を切り替える">♪</button>
+        <button class="icon-button" type="button" aria-label="ゲーム設定" disabled>⚙</button>
+      </div>
+    </header>
+
+    <section class="game-area" aria-label="リズムゲーム">
+      <section class="song-panel" aria-label="曲を選ぶ">
+        <div>
+          <p class="panel-label">曲</p>
+          <p class="feedback-text" id="songSummary">5種類のフリー音源</p>
+          <p class="source-line" id="sourceLine"></p>
+        </div>
+        <div class="song-list" id="songList"></div>
+      </section>
+
+      <div class="playfield">
+        <section class="stage-panel" aria-label="ボタン">
+          <div class="tap-stage" id="tapStage">
+            <div class="pulse-ring" id="pulseRing"></div>
+            <button class="tap-button" id="tapButton" type="button" aria-label="拍に合わせて押す">PUSH</button>
+            <div class="hand-cue" aria-hidden="true">
+              <span class="hand-finger"></span>
+              <span class="hand-palm"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="score-panel" aria-label="スコア">
+          <div class="score-grid">
+            <div class="score-card">
+              <p class="score-label">スコア</p>
+              <p class="score-value" id="scoreValue">0</p>
+            </div>
+            <div class="score-card">
+              <p class="score-label">コンボ</p>
+              <p class="score-value" id="comboValue">0</p>
+            </div>
+            <div class="score-card">
+              <p class="score-label">判定</p>
+              <p class="score-value" id="hitValue">0 / 4</p>
+            </div>
+            <div class="score-card">
+              <p class="score-label">BPM</p>
+              <p class="score-value" id="bpmValue">96</p>
+            </div>
+          </div>
+          <div class="judgement" id="judgement" data-rank="">READY</div>
+        </section>
+      </div>
+
+      <section class="beat-panel" aria-label="拍">
+        <div class="beat-header">
+          <p class="panel-label" id="roundText">16拍ラウンド</p>
+          <p class="panel-label" id="beatText">待機中</p>
+        </div>
+        <div class="beat-strip" id="beatStrip"></div>
+        <div class="beat-progress" aria-hidden="true">
+          <div class="beat-progress-fill" id="beatProgressFill"></div>
+        </div>
+        <div class="sync-readout" id="syncReadout">Audio clock: idle</div>
+      </section>
+
+      <section class="feedback-panel" aria-live="polite">
+        <p class="feedback-label">フィードバック</p>
+        <p class="feedback-text" id="feedbackText">曲を選んでスタートします。</p>
+      </section>
+    </section>
+
+    <footer class="control-bar" aria-label="そうさ">
+      <span class="control-spacer" id="modeText">フリー音源</span>
+      <div class="bottom-actions">
+        <button class="action-button primary" id="startButton" type="button">▶ Play</button>
+        <button class="action-button" id="resetButton" type="button">リセット</button>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const songs = [
+      {
+        id: "lasso",
+        name: "Lasso Lady",
+        author: "congusbongus",
+        bpm: 140,
+        license: "CC0",
+        pageUrl: "https://opengameart.org/content/lasso-lady-seamless-loop",
+        source: "assets/audio/lasso-lady.ogg",
+        beatOffsetSeconds: 0,
+        accent: [0, 3, 6, 9, 12, 15]
+      },
+      {
+        id: "electro",
+        name: "Simple Serious Electro Loop",
+        author: "qubodup",
+        bpm: 140,
+        license: "CC-BY 3.0",
+        pageUrl: "https://opengameart.org/content/simple-serious-electro-loop",
+        source: "assets/audio/simple-serious-electro.ogg",
+        beatOffsetSeconds: 0,
+        accent: [0, 4, 7, 10, 14]
+      },
+      {
+        id: "carnival",
+        name: "8-bit Carnival Arcade Loop",
+        author: "jocolloman / Joseph Collard",
+        bpm: 172,
+        license: "CC-BY 4.0",
+        pageUrl: "https://opengameart.org/content/8-bit-carnival-arcade-loop",
+        source: "assets/audio/arcade-carnival.mp3",
+        beatOffsetSeconds: 0,
+        accent: [0, 2, 4, 6, 8, 10, 12, 14]
+      },
+      {
+        id: "prismatic",
+        name: "Prismatic Light",
+        author: "tcarisland",
+        bpm: 140,
+        license: "CC-BY 4.0",
+        pageUrl: "https://opengameart.org/content/prismatic-light",
+        source: "assets/audio/prismatic-light.mp3",
+        beatOffsetSeconds: 0,
+        accent: [0, 4, 8, 11, 14]
+      },
+      {
+        id: "catch",
+        name: "Catch me if you can!",
+        author: "poinl",
+        bpm: 158,
+        license: "CC0",
+        pageUrl: "https://opengameart.org/content/catch-me-if-you-can",
+        source: "assets/audio/catch-me-if-you-can.mp3",
+        beatOffsetSeconds: 0,
+        accent: [0, 3, 5, 8, 10, 13, 15]
+      }
+    ];
+
+    const refs = {
+      songList: document.getElementById("songList"),
+      songSummary: document.getElementById("songSummary"),
+      sourceLine: document.getElementById("sourceLine"),
+      tapStage: document.getElementById("tapStage"),
+      pulseRing: document.getElementById("pulseRing"),
+      tapButton: document.getElementById("tapButton"),
+      scoreValue: document.getElementById("scoreValue"),
+      comboValue: document.getElementById("comboValue"),
+      hitValue: document.getElementById("hitValue"),
+      bpmValue: document.getElementById("bpmValue"),
+      judgement: document.getElementById("judgement"),
+      roundText: document.getElementById("roundText"),
+      beatText: document.getElementById("beatText"),
+      beatStrip: document.getElementById("beatStrip"),
+      beatProgressFill: document.getElementById("beatProgressFill"),
+      syncReadout: document.getElementById("syncReadout"),
+      feedbackText: document.getElementById("feedbackText"),
+      modeText: document.getElementById("modeText"),
+      startButton: document.getElementById("startButton"),
+      resetButton: document.getElementById("resetButton"),
+      backButton: document.getElementById("backButton"),
+      soundButton: document.getElementById("soundButton")
+    };
+
+    const state = {
+      songIndex: 0,
+      phase: "idle",
+      running: false,
+      muted: false,
+      audioElement: new Audio(),
+      schedulerId: null,
+      animationId: null,
+      transitionId: null,
+      currentBeat: -1,
+      lastVisualBeat: -1,
+      roundBeats: 16,
+      score: 0,
+      combo: 0,
+      bestCombo: 0,
+      hitCount: 0,
+      beatResults: [],
+      demoHits: [],
+      lastRank: "",
+      lastPressAt: -Infinity,
+      pulseUntil: 0
+    };
+
+    function selectedSong() {
+      return songs[state.songIndex];
+    }
+
+    function beatDuration() {
+      return 60 / selectedSong().bpm;
+    }
+
+    function beatOffset() {
+      return selectedSong().beatOffsetSeconds || 0;
+    }
+
+    function targetBeats() {
+      return selectedSong().accent;
+    }
+
+    function isTargetBeat(beatIndex) {
+      return targetBeats().includes(beatIndex);
+    }
+
+    function isHitResult(result) {
+      return result === "perfect" || result === "good";
+    }
+
+    function musicTime() {
+      return Math.max(0, state.audioElement.currentTime - beatOffset());
+    }
+
+    function beatPosition() {
+      return musicTime() / beatDuration();
+    }
+
+    function currentMusicBeat() {
+      return Math.floor(beatPosition());
+    }
+
+    function nearestTargetBeat() {
+      const now = musicTime();
+      let nearest = null;
+
+      for (const beatIndex of targetBeats()) {
+        const beatTime = beatIndex * beatDuration();
+        const deltaMs = (now - beatTime) * 1000;
+        const distance = Math.abs(deltaMs);
+
+        if (!nearest || distance < nearest.distance) {
+          nearest = {
+            beatIndex,
+            deltaMs,
+            distance
+          };
+        }
+      }
+
+      return nearest;
+    }
+
+    function clearLoops() {
+      if (state.schedulerId !== null) {
+        clearInterval(state.schedulerId);
+        state.schedulerId = null;
+      }
+
+      if (state.animationId !== null) {
+        cancelAnimationFrame(state.animationId);
+        state.animationId = null;
+      }
+
+      if (state.transitionId !== null) {
+        clearTimeout(state.transitionId);
+        state.transitionId = null;
+      }
+    }
+
+    function stopMusic() {
+      state.audioElement.pause();
+
+      try {
+        state.audioElement.currentTime = 0;
+      } catch (error) {
+        // Audio metadata may not be loaded yet.
+      }
+    }
+
+    async function playMusic() {
+      const song = selectedSong();
+      const audio = state.audioElement;
+
+      audio.pause();
+
+      if (!audio.src.endsWith(song.source)) {
+        audio.src = song.source;
+      }
+
+      try {
+        audio.currentTime = beatOffset();
+      } catch (error) {
+        // Some browsers reject seeking before metadata is ready.
+      }
+
+      audio.loop = false;
+      audio.muted = state.muted;
+      audio.volume = 0.78;
+
+      try {
+        await audio.play();
+        return true;
+      } catch (error) {
+        refs.feedbackText.textContent = "音楽の再生が止められました。もう一度Playを押してください。";
+        return false;
+      }
+    }
+
+    function cueDemoTap() {
+      refs.tapStage.classList.add("is-demo-tap");
+      refs.tapButton.classList.add("is-hit");
+
+      window.setTimeout(() => {
+        refs.tapStage.classList.remove("is-demo-tap");
+        refs.tapButton.classList.remove("is-hit");
+      }, 160);
+    }
+
+    function markMissedTarget(beatIndex) {
+      if (
+        state.phase === "player"
+        && beatIndex >= 0
+        && isTargetBeat(beatIndex)
+        && !isHitResult(state.beatResults[beatIndex])
+      ) {
+        state.beatResults[beatIndex] = "miss";
+        state.combo = 0;
+      }
+    }
+
+    function handleBeatEnter(beatIndex) {
+      state.currentBeat = beatIndex;
+      state.lastVisualBeat = beatIndex;
+      state.pulseUntil = performance.now() / 1000 + 0.12;
+
+      if (beatIndex >= 0 && beatIndex < state.roundBeats) {
+        state.beatResults[beatIndex] = state.beatResults[beatIndex] || "";
+      }
+
+      if (state.phase === "demo" && isTargetBeat(beatIndex)) {
+        state.demoHits[beatIndex] = true;
+        refs.judgement.textContent = "WATCH";
+        refs.judgement.dataset.rank = "";
+        cueDemoTap();
+      }
+
+      renderBeatStrip();
+      renderLive();
+    }
+
+    function updateBeatFromMusic() {
+      if (!state.running) {
+        return;
+      }
+
+      const beatIndex = currentMusicBeat();
+
+      if (beatIndex >= state.roundBeats) {
+        markMissedTarget(state.currentBeat);
+
+        if (state.phase === "demo") {
+          finishDemo();
+        } else {
+          finishRound();
+        }
+
+        return;
+      }
+
+      if (beatIndex !== state.lastVisualBeat) {
+        markMissedTarget(state.currentBeat);
+        handleBeatEnter(beatIndex);
+      }
+    }
+
+    function animate() {
+      updateBeatFromMusic();
+
+      const now = performance.now() / 1000;
+      const position = beatPosition();
+      const beatFraction = position - Math.floor(position);
+      const pulse = state.running ? 1 + (1 - beatFraction) * 0.18 : 1;
+      const beatOn = state.running && now < state.pulseUntil;
+      const progress = state.running
+        ? Math.min(100, Math.max(0, (position / state.roundBeats) * 100))
+        : 0;
+
+      refs.pulseRing.style.setProperty("--pulse", pulse.toFixed(3));
+      refs.beatProgressFill.style.setProperty("--beat-progress", `${progress}%`);
+      refs.tapStage.classList.toggle("is-beat", beatOn);
+      renderLive();
+
+      if (state.running) {
+        state.animationId = requestAnimationFrame(animate);
+      }
+    }
+
+    async function startRound() {
+      clearLoops();
+      stopMusic();
+      state.phase = "demo";
+      state.running = false;
+      state.currentBeat = -1;
+      state.lastVisualBeat = -1;
+      state.score = 0;
+      state.combo = 0;
+      state.bestCombo = 0;
+      state.hitCount = 0;
+      state.beatResults = Array(state.roundBeats).fill("");
+      state.demoHits = Array(state.roundBeats).fill(false);
+      state.lastRank = "";
+      state.lastPressAt = -Infinity;
+      refs.feedbackText.textContent = "まずお手本です。手が押す拍を見ます。";
+      refs.judgement.textContent = "WATCH";
+      refs.judgement.dataset.rank = "";
+      render();
+
+      const started = await playMusic();
+
+      if (!started) {
+        state.phase = "idle";
+        state.running = false;
+        render();
+        return;
+      }
+
+      state.running = true;
+      state.pulseUntil = 0;
+      animate();
+      render();
+    }
+
+    function finishDemo() {
+      clearLoops();
+      stopMusic();
+      state.phase = "between";
+      state.running = false;
+      state.currentBeat = -1;
+      refs.tapStage.classList.remove("is-demo-tap");
+      refs.tapButton.classList.remove("is-hit");
+      refs.feedbackText.textContent = "つぎはプレイヤーの番です。お手本と同じ拍でPUSHします。";
+      refs.judgement.textContent = "YOUR TURN";
+      refs.judgement.dataset.rank = "";
+      render();
+      state.transitionId = window.setTimeout(startPlayerTurn, 1000);
+    }
+
+    async function startPlayerTurn() {
+      clearLoops();
+      stopMusic();
+      state.phase = "player";
+      state.running = false;
+      state.currentBeat = -1;
+      state.lastVisualBeat = -1;
+      state.beatResults = Array(state.roundBeats).fill("");
+      state.score = 0;
+      state.combo = 0;
+      state.bestCombo = 0;
+      state.hitCount = 0;
+      state.lastRank = "";
+      refs.feedbackText.textContent = "プレイヤーの番です。手本と同じ拍でPUSHします。";
+      refs.judgement.textContent = "PUSH";
+      refs.judgement.dataset.rank = "";
+      render();
+
+      const started = await playMusic();
+
+      if (!started) {
+        state.phase = "idle";
+        state.running = false;
+        render();
+        return;
+      }
+
+      state.running = true;
+      state.pulseUntil = 0;
+      animate();
+      render();
+    }
+
+    function finishRound() {
+      clearLoops();
+      stopMusic();
+      state.phase = "finished";
+      state.running = false;
+
+      const missed = targetBeats().filter((beatIndex) => !isHitResult(state.beatResults[beatIndex])).length;
+
+      for (const beatIndex of targetBeats()) {
+        if (!isHitResult(state.beatResults[beatIndex])) {
+          state.beatResults[beatIndex] = "miss";
+        }
+      }
+
+      refs.feedbackText.textContent = missed === 0
+        ? "ラウンド完了。お手本の拍をすべて押せました。"
+        : `ラウンド完了。次は残り${missed}拍を狙います。`;
+      refs.judgement.textContent = "FINISH";
+      refs.judgement.dataset.rank = "";
+      render();
+    }
+
+    function resetRound() {
+      clearLoops();
+      stopMusic();
+      state.phase = "idle";
+      state.running = false;
+      state.currentBeat = -1;
+      state.score = 0;
+      state.combo = 0;
+      state.bestCombo = 0;
+      state.hitCount = 0;
+      state.beatResults = Array(state.roundBeats).fill("");
+      state.demoHits = Array(state.roundBeats).fill(false);
+      state.lastRank = "";
+      state.lastPressAt = -Infinity;
+      refs.tapStage.classList.remove("is-demo-tap");
+      refs.tapButton.classList.remove("is-hit");
+      refs.feedbackText.textContent = "曲を選んでPlayします。まずお手本が流れます。";
+      refs.judgement.textContent = "READY";
+      refs.judgement.dataset.rank = "";
+      render();
+    }
+
+    function tapBeat() {
+      if (state.phase === "demo") {
+        refs.judgement.textContent = "WATCH";
+        refs.feedbackText.textContent = "いまはお手本です。手が押す拍を見ます。";
+        return;
+      }
+
+      if (state.phase !== "player" || !state.running || state.currentBeat < 0) {
+        refs.judgement.textContent = "READY";
+        refs.feedbackText.textContent = "Playすると、まずお手本が流れます。";
+        return;
+      }
+
+      const nearest = nearestTargetBeat();
+      const deltaMs = nearest ? Math.abs(nearest.deltaMs) : Infinity;
+      const targetBeat = nearest ? nearest.beatIndex : -1;
+      const target = nearest && deltaMs <= 190;
+      const alreadyHit = target && isHitResult(state.beatResults[targetBeat]);
+      let rank = "miss";
+
+      if (!target || alreadyHit) {
+        state.combo = 0;
+      } else if (deltaMs <= 90) {
+        rank = "perfect";
+        state.score += 120 + state.combo * 4;
+        state.combo += 1;
+        state.hitCount += 1;
+      } else if (deltaMs <= 170) {
+        rank = "good";
+        state.score += 70 + state.combo * 2;
+        state.combo += 1;
+        state.hitCount += 1;
+      } else {
+        state.combo = 0;
+      }
+
+      state.bestCombo = Math.max(state.bestCombo, state.combo);
+
+      if (!alreadyHit) {
+        state.beatResults[targetBeat] = rank;
+      }
+
+      state.lastRank = rank;
+      state.lastPressAt = musicTime();
+      refs.tapButton.classList.add("is-hit");
+      window.setTimeout(() => refs.tapButton.classList.remove("is-hit"), 90);
+
+      if (rank === "perfect") {
+        refs.judgement.textContent = "PERFECT";
+        refs.feedbackText.textContent = `${Math.round(deltaMs)}ms。かなり近い拍です。`;
+      } else if (rank === "good") {
+        refs.judgement.textContent = "GOOD";
+        refs.feedbackText.textContent = `${Math.round(deltaMs)}ms。拍に合っています。`;
+      } else if (!target) {
+        refs.judgement.textContent = "MISS";
+        refs.feedbackText.textContent = "お手本の拍から離れています。";
+      } else if (alreadyHit) {
+        refs.judgement.textContent = "MISS";
+        refs.feedbackText.textContent = "同じ拍をもう一度押しました。次の手本の拍を待ちます。";
+      } else {
+        refs.judgement.textContent = "MISS";
+        refs.feedbackText.textContent = `${Math.round(deltaMs)}ms。次の拍を狙います。`;
+      }
+
+      refs.judgement.dataset.rank = rank;
+      render();
+    }
+
+    function selectSong(index) {
+      state.songIndex = index;
+      resetRound();
+    }
+
+    function renderSongButtons() {
+      refs.songList.replaceChildren();
+
+      songs.forEach((song, index) => {
+        const button = document.createElement("button");
+        const name = document.createElement("span");
+        const meta = document.createElement("span");
+        button.className = "song-button";
+        button.type = "button";
+        button.classList.toggle("is-selected", index === state.songIndex);
+        name.className = "song-name";
+        meta.className = "song-meta";
+        name.textContent = song.name;
+        meta.textContent = `${song.bpm} BPM`;
+        button.append(name, meta);
+        button.addEventListener("click", () => selectSong(index));
+        refs.songList.appendChild(button);
+      });
+    }
+
+    function renderBeatStrip() {
+      refs.beatStrip.replaceChildren();
+      const showTargetPattern = state.phase !== "idle";
+      const showDemoPattern = state.phase === "demo" || state.phase === "between";
+
+      for (let index = 0; index < state.roundBeats; index += 1) {
+        const cell = document.createElement("span");
+        const result = state.beatResults[index];
+        cell.className = "beat-cell";
+        cell.textContent = String(index + 1);
+        cell.classList.toggle("is-active", state.running && index === state.currentBeat);
+        cell.classList.toggle("is-target", showTargetPattern && isTargetBeat(index));
+        cell.classList.toggle("is-demo", showDemoPattern && state.demoHits[index]);
+        cell.classList.toggle("is-hit", isHitResult(result));
+        cell.classList.toggle("is-miss", result === "miss");
+        cell.setAttribute("aria-label", `${index + 1}拍目`);
+        refs.beatStrip.appendChild(cell);
+      }
+    }
+
+    function renderLive() {
+      if (state.running && state.currentBeat >= 0) {
+        const label = state.phase === "demo" ? "お手本" : "プレイヤー";
+        const nearest = nearestTargetBeat();
+        const delta = nearest ? Math.round(nearest.deltaMs) : 0;
+        refs.beatText.textContent = `${label} ${state.currentBeat + 1} / ${state.roundBeats}`;
+        refs.syncReadout.textContent = `music ${musicTime().toFixed(3)}s / nearest target ${nearest ? nearest.beatIndex + 1 : "-"} / ${delta}ms`;
+        return;
+      }
+
+      if (state.phase === "between") {
+        refs.beatText.textContent = "プレイヤー準備";
+        refs.beatProgressFill.style.setProperty("--beat-progress", "100%");
+        refs.syncReadout.textContent = "Audio clock: waiting for player turn";
+        return;
+      }
+
+      if (state.phase === "finished") {
+        refs.beatText.textContent = "終了";
+        refs.beatProgressFill.style.setProperty("--beat-progress", "100%");
+        refs.syncReadout.textContent = "Audio clock: finished";
+        return;
+      }
+
+      refs.beatText.textContent = "待機中";
+      refs.beatProgressFill.style.setProperty("--beat-progress", "0%");
+      refs.syncReadout.textContent = "Audio clock: idle";
+    }
+
+    function render() {
+      const song = selectedSong();
+      refs.startButton.disabled = state.phase === "demo" || state.phase === "player" || state.phase === "between";
+      refs.startButton.textContent = state.running
+        ? state.phase === "demo" ? "お手本中" : "プレイ中"
+        : state.phase === "demo" ? "準備中"
+        : "▶ Play";
+      refs.soundButton.textContent = state.muted ? "×" : "♪";
+      refs.soundButton.setAttribute("aria-label", state.muted ? "音を出す" : "音を消す");
+      state.audioElement.muted = state.muted;
+      refs.tapStage.classList.toggle("is-demo", state.phase === "demo");
+      refs.songSummary.textContent = `${song.name} / ${song.bpm} BPM / ${targetBeats().length}回押す`;
+      refs.sourceLine.innerHTML = `作者: ${song.author} / ${song.license} / <a href="${song.pageUrl}" target="_blank" rel="noopener">配布元</a>`;
+      refs.scoreValue.textContent = String(state.score);
+      refs.comboValue.textContent = String(state.combo);
+      refs.hitValue.textContent = `${state.hitCount} / ${targetBeats().length}`;
+      refs.bpmValue.textContent = String(song.bpm);
+      refs.modeText.textContent = state.muted ? "音なし" : "フリー音源";
+      refs.roundText.textContent = `お手本→プレイヤー / 最高${state.bestCombo}`;
+      renderSongButtons();
+      renderBeatStrip();
+      renderLive();
+    }
+
+    refs.startButton.addEventListener("click", startRound);
+    refs.resetButton.addEventListener("click", resetRound);
+    refs.tapButton.addEventListener("click", tapBeat);
+    refs.backButton.addEventListener("click", () => {
+      window.location.href = "game.html";
+    });
+    refs.soundButton.addEventListener("click", () => {
+      state.muted = !state.muted;
+      render();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === " ") {
+        event.preventDefault();
+        tapBeat();
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+
+        if (state.phase === "player") {
+          tapBeat();
+        } else if (!state.running && state.phase !== "between") {
+          startRound();
+        }
+      }
+    });
+
+    resetRound();
+  </script>
+</body>
+</html>
