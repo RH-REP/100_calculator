@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>100 玉そろばん計算機</title>
+  <title>100だまそろばん けいさんき</title>
   <style>
     :root {
       color-scheme: light;
@@ -41,12 +41,20 @@
       font: inherit;
     }
 
-    .page-jump {
+    .page-links {
       position: fixed;
       top: 16px;
       right: 16px;
       z-index: 20;
-      min-height: 42px;
+      display: inline-flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+    }
+
+    .page-jump {
+      min-height: 48px;
       border: 1px solid #b8c6cf;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.92);
@@ -376,6 +384,19 @@
         padding: 10px;
       }
 
+      .page-links {
+        position: static;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .page-jump {
+        width: 100%;
+      }
+
       .top-cell {
         align-items: stretch;
       }
@@ -439,32 +460,37 @@
 </head>
 <body>
   <main class="app">
-    <a class="page-jump" href="game.html">ゲーム</a>
+    <nav class="page-links" aria-label="ページいどう">
+      <a class="page-jump" href="game.html">ゲーム1</a>
+      <a class="page-jump" href="game2.html">ゲーム2</a>
+      <a class="page-jump" href="game3.html">ゲーム3</a>
+      <a class="page-jump" href="game4.html">ゲーム4</a>
+    </nav>
 
-    <section class="top-cell" aria-label="数字表示">
+    <section class="top-cell" aria-label="すうじひょうじ">
       <div class="number-cell">
         <output class="number" id="totalDisplay" aria-live="polite">0</output>
       </div>
 
       <label class="toggle-cell">
-        <span>非表示</span>
-        <input id="hideToggle" type="checkbox" aria-label="数字を非表示にする">
+        <span>かくす</span>
+        <input id="hideToggle" type="checkbox" aria-label="すうじをかくす">
         <span class="switch" aria-hidden="true"></span>
       </label>
     </section>
 
-    <section class="abacus-cell" aria-label="100玉そろばん">
+    <section class="abacus-cell" aria-label="100だまそろばん">
       <div class="tool-row">
-        <h1 class="title">100 玉そろばん</h1>
-        <div class="tools" aria-label="数の調整">
-          <button class="tool-button" id="minusOne" type="button" aria-label="1減らす">−</button>
-          <button class="tool-button" id="reset" type="button" aria-label="0に戻す">0</button>
-          <button class="tool-button" id="plusOne" type="button" aria-label="1増やす">＋</button>
+        <h1 class="title">100だまそろばん</h1>
+        <div class="tools" aria-label="かずをかえる">
+          <button class="tool-button" id="minusOne" type="button" aria-label="1へらす">−</button>
+          <button class="tool-button" id="reset" type="button" aria-label="0にもどす">0</button>
+          <button class="tool-button" id="plusOne" type="button" aria-label="1ふやす">＋</button>
         </div>
       </div>
 
       <div class="abacus-frame">
-        <div class="abacus" id="abacus" aria-label="玉を動かして数を作る"></div>
+        <div class="abacus" id="abacus" aria-label="たまをうごかしてかずをつくる"></div>
       </div>
     </section>
   </main>
@@ -507,7 +533,7 @@
       totalDisplay.classList.toggle("is-hidden", hideToggle.checked);
       totalDisplay.setAttribute(
         "aria-label",
-        hideToggle.checked ? "数字は非表示です" : `${nextTotal}`
+        hideToggle.checked ? "すうじはかくれています" : `${nextTotal}`
       );
     }
 
@@ -536,7 +562,7 @@
       track.className = "track";
       track.dataset.row = String(row);
       track.setAttribute("role", "group");
-      track.setAttribute("aria-label", `${row + 1}段目`);
+      track.setAttribute("aria-label", `${row + 1}だんめ`);
 
       const slotLayer = document.createElement("div");
       slotLayer.className = "slot-layer";
@@ -556,7 +582,7 @@
         button.dataset.row = String(row);
         button.dataset.bead = String(bead);
         button.dataset.color = bead < beadsPerRow / 2 ? "warm" : "cool";
-        button.setAttribute("aria-label", `${row + 1}段目 ${bead + 1}玉目`);
+        button.setAttribute("aria-label", `${row + 1}だんめ ${bead + 1}たまめ`);
         button.addEventListener("click", () => {
           setRowCount(row, beadTargetCount(row, bead));
         });
@@ -572,13 +598,13 @@
         const row = Number(bead.dataset.row);
         const beadIndex = Number(bead.dataset.bead);
         const isOn = beadIndex < counts[row];
-        const direction = isOn ? "クリックでこの玉まで右へ戻します" : "クリックでこの玉まで左へ動かします";
+        const direction = isOn ? "クリックでこのたままでみぎへもどします" : "クリックでこのたままでひだりへうごかします";
 
         bead.style.setProperty("--bead-x", `${slotPosition(beadSlot(beadIndex, isOn))}%`);
         bead.dataset.side = isOn ? "left" : "right";
         bead.classList.toggle("is-on", isOn);
         bead.setAttribute("aria-pressed", isOn ? "true" : "false");
-        bead.setAttribute("aria-label", `${row + 1}段目 ${beadIndex + 1}玉目。${direction}`);
+        bead.setAttribute("aria-label", `${row + 1}だんめ ${beadIndex + 1}たまめ。${direction}`);
       }
 
       updateDisplay();
