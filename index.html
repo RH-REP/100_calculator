@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>100 玉そろばん計算機</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef3f6;
+      --surface: #ffffff;
+      --ink: #18212b;
+      --muted: #65717e;
+      --line: #c9d4dc;
+      --rail: #5f7382;
+      --frame: #264653;
+      --frame-dark: #19313b;
+      --accent: #e76f51;
+      --accent-2: #2a9d8f;
+      --off: #f7fafc;
+      --shadow: 0 18px 55px rgba(24, 33, 43, 0.14);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+        "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(42, 157, 143, 0.16), transparent 34rem),
+        linear-gradient(135deg, #eef3f6 0%, #f7f9fb 52%, #e7eef2 100%);
+      color: var(--ink);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 42px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: clamp(16px, 3vw, 26px);
+    }
+
+    .top-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .number-cell {
+      width: min(360px, 100%);
+      min-height: 112px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+
+    .number {
+      min-width: 5ch;
+      text-align: center;
+      font-size: clamp(48px, 10vw, 86px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .number.is-hidden {
+      color: transparent;
+      user-select: none;
+    }
+
+    .toggle-cell {
+      min-height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(24, 33, 43, 0.08);
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .toggle-cell input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch {
+      width: 56px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid #aebcc6;
+      background: #dce5eb;
+      position: relative;
+      transition: background 160ms ease, border-color 160ms ease;
+      flex: 0 0 auto;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(24, 33, 43, 0.22);
+      transition: transform 160ms ease;
+    }
+
+    .toggle-cell input:checked + .switch {
+      border-color: #2a9d8f;
+      background: #2a9d8f;
+    }
+
+    .toggle-cell input:checked + .switch::after {
+      transform: translateX(24px);
+    }
+
+    .toggle-cell input:focus-visible + .switch,
+    .bead:focus-visible,
+    .tool-button:focus-visible {
+      outline: 3px solid rgba(42, 157, 143, 0.42);
+      outline-offset: 3px;
+    }
+
+    .abacus-cell {
+      min-height: min(680px, calc(100vh - 180px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 3.2vw, 28px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: clamp(12px, 2.5vw, 20px);
+    }
+
+    .tool-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(20px, 4vw, 34px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .tools {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .tool-button {
+      width: 48px;
+      height: 42px;
+      border-radius: 8px;
+      border: 1px solid #b8c6cf;
+      background: #f8fbfc;
+      color: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(24, 33, 43, 0.08);
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .tool-button:hover {
+      transform: translateY(-1px);
+      border-color: #7d929e;
+      background: #ffffff;
+    }
+
+    .tool-button:active {
+      transform: translateY(1px);
+    }
+
+    .abacus-frame {
+      min-width: 0;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, var(--frame-dark), var(--frame) 18%, var(--frame) 82%, var(--frame-dark));
+      padding: clamp(12px, 2.5vw, 24px);
+      display: grid;
+      align-content: center;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
+
+    .abacus {
+      min-width: 0;
+      display: grid;
+      gap: clamp(8px, 1.7vw, 14px);
+      user-select: none;
+      touch-action: none;
+    }
+
+    .rail-row {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(28px, 40px) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(8px, 1.8vw, 16px);
+    }
+
+    .row-label {
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #f3fbfc;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .track {
+      --bead-size: clamp(12px, calc((100vw - 90px) / 22), 42px);
+      min-width: 0;
+      position: relative;
+      min-height: calc(var(--bead-size) + 12px);
+      padding: 6px 0;
+    }
+
+    .track::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent 0, var(--rail) 4%, var(--rail) 96%, transparent 100%);
+      transform: translateY(-50%);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .track::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 8%;
+      bottom: 8%;
+      width: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.5);
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 1px rgba(25, 49, 59, 0.2);
+    }
+
+    .slot-layer {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr) minmax(10px, 0.75fr) repeat(10, 1fr);
+      gap: 2px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .slot {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .slot.is-center {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .bead {
+      position: absolute;
+      left: var(--bead-x);
+      top: 50%;
+      z-index: 2;
+      width: var(--bead-size);
+      aspect-ratio: 1;
+      border: 1px solid rgba(137, 46, 27, 0.45);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9) 0 10%, transparent 33%),
+        linear-gradient(145deg, #ffb199, var(--accent));
+      box-shadow:
+        inset -5px -6px 10px rgba(101, 113, 126, 0.18),
+        inset 4px 4px 8px rgba(255, 255, 255, 0.7),
+        0 3px 8px rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      transition: left 190ms ease, transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .bead[data-color="cool"] {
+      border-color: rgba(22, 104, 94, 0.55);
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9) 0 10%, transparent 33%),
+        linear-gradient(145deg, #80d8cc, var(--accent-2));
+    }
+
+    .bead.is-on {
+      box-shadow:
+        inset -5px -6px 10px rgba(101, 113, 126, 0.16),
+        inset 4px 4px 8px rgba(255, 255, 255, 0.74),
+        0 0 0 2px rgba(255, 255, 255, 0.55),
+        0 4px 9px rgba(0, 0, 0, 0.2);
+    }
+
+    .bead:hover {
+      transform: translate(-50%, -50%) scale(1.04);
+    }
+
+    .bead.is-on:hover {
+      transform: translate(-50%, -50%) scale(1.04);
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 10px;
+      }
+
+      .top-cell {
+        align-items: stretch;
+      }
+
+      .number-cell,
+      .toggle-cell {
+        width: 100%;
+      }
+
+      .toggle-cell {
+        justify-content: center;
+      }
+
+      .abacus-cell {
+        min-height: auto;
+        padding: 10px;
+      }
+
+      .abacus-frame {
+        padding: 10px;
+      }
+
+      .tool-row {
+        justify-content: center;
+      }
+
+      .title {
+        width: 100%;
+        text-align: center;
+      }
+
+      .rail-row {
+        grid-template-columns: 26px minmax(0, 1fr);
+        gap: 6px;
+      }
+
+      .row-label {
+        height: 26px;
+        font-size: 12px;
+      }
+
+      .track {
+        --bead-size: clamp(10px, calc((100vw - 88px) / 23), 17px);
+        min-height: calc(var(--bead-size) + 10px);
+      }
+
+      .slot-layer {
+        gap: 1px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="top-cell" aria-label="数字表示">
+      <div class="number-cell">
+        <output class="number" id="totalDisplay" aria-live="polite">0</output>
+      </div>
+
+      <label class="toggle-cell">
+        <span>非表示</span>
+        <input id="hideToggle" type="checkbox" aria-label="数字を非表示にする">
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+    </section>
+
+    <section class="abacus-cell" aria-label="100玉そろばん">
+      <div class="tool-row">
+        <h1 class="title">100 玉そろばん</h1>
+        <div class="tools" aria-label="数の調整">
+          <button class="tool-button" id="minusOne" type="button" aria-label="1減らす">−</button>
+          <button class="tool-button" id="reset" type="button" aria-label="0に戻す">0</button>
+          <button class="tool-button" id="plusOne" type="button" aria-label="1増やす">＋</button>
+        </div>
+      </div>
+
+      <div class="abacus-frame">
+        <div class="abacus" id="abacus" aria-label="玉を動かして数を作る"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const rows = 10;
+    const beadsPerRow = 10;
+    const counts = Array(rows).fill(0);
+    const abacus = document.getElementById("abacus");
+    const totalDisplay = document.getElementById("totalDisplay");
+    const hideToggle = document.getElementById("hideToggle");
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function total() {
+      return counts.reduce((sum, count) => sum + count, 0);
+    }
+
+    function setTotal(nextTotal) {
+      let remaining = clamp(nextTotal, 0, rows * beadsPerRow);
+
+      for (let row = 0; row < rows; row += 1) {
+        counts[row] = clamp(remaining, 0, beadsPerRow);
+        remaining -= counts[row];
+      }
+
+      render();
+    }
+
+    function setRowCount(row, nextCount) {
+      counts[row] = clamp(nextCount, 0, beadsPerRow);
+      render();
+    }
+
+    function updateDisplay() {
+      const nextTotal = total();
+      totalDisplay.textContent = hideToggle.checked ? "100" : String(nextTotal);
+      totalDisplay.classList.toggle("is-hidden", hideToggle.checked);
+      totalDisplay.setAttribute(
+        "aria-label",
+        hideToggle.checked ? "数字は非表示です" : `${nextTotal}`
+      );
+    }
+
+    function beadTargetCount(row, bead) {
+      return bead < counts[row] ? bead : bead + 1;
+    }
+
+    function beadSlot(bead, isOn) {
+      return isOn ? bead : beadsPerRow + 1 + bead;
+    }
+
+    function slotPosition(slot) {
+      return ((slot + 0.5) / (beadsPerRow * 2 + 1)) * 100;
+    }
+
+    function buildRow(row) {
+      const railRow = document.createElement("div");
+      railRow.className = "rail-row";
+
+      const label = document.createElement("div");
+      label.className = "row-label";
+      label.textContent = String((row + 1) * 10);
+      railRow.appendChild(label);
+
+      const track = document.createElement("div");
+      track.className = "track";
+      track.dataset.row = String(row);
+      track.setAttribute("role", "group");
+      track.setAttribute("aria-label", `${row + 1}段目`);
+
+      const slotLayer = document.createElement("div");
+      slotLayer.className = "slot-layer";
+
+      for (let slot = 0; slot < beadsPerRow * 2 + 1; slot += 1) {
+        const cell = document.createElement("div");
+        cell.className = slot === beadsPerRow ? "slot is-center" : "slot";
+        slotLayer.appendChild(cell);
+      }
+
+      track.appendChild(slotLayer);
+
+      for (let bead = 0; bead < beadsPerRow; bead += 1) {
+        const button = document.createElement("button");
+        button.className = "bead";
+        button.type = "button";
+        button.dataset.row = String(row);
+        button.dataset.bead = String(bead);
+        button.dataset.color = bead < beadsPerRow / 2 ? "warm" : "cool";
+        button.setAttribute("aria-label", `${row + 1}段目 ${bead + 1}玉目`);
+        button.addEventListener("click", () => {
+          setRowCount(row, beadTargetCount(row, bead));
+        });
+        track.appendChild(button);
+      }
+
+      railRow.appendChild(track);
+      return railRow;
+    }
+
+    function render() {
+      for (const bead of abacus.querySelectorAll(".bead")) {
+        const row = Number(bead.dataset.row);
+        const beadIndex = Number(bead.dataset.bead);
+        const isOn = beadIndex < counts[row];
+        const direction = isOn ? "クリックでこの玉まで右へ戻します" : "クリックでこの玉まで左へ動かします";
+
+        bead.style.setProperty("--bead-x", `${slotPosition(beadSlot(beadIndex, isOn))}%`);
+        bead.dataset.side = isOn ? "left" : "right";
+        bead.classList.toggle("is-on", isOn);
+        bead.setAttribute("aria-pressed", isOn ? "true" : "false");
+        bead.setAttribute("aria-label", `${row + 1}段目 ${beadIndex + 1}玉目。${direction}`);
+      }
+
+      updateDisplay();
+    }
+
+    for (let row = 0; row < rows; row += 1) {
+      abacus.appendChild(buildRow(row));
+    }
+
+    document.getElementById("minusOne").addEventListener("click", () => {
+      setTotal(total() - 1);
+    });
+
+    document.getElementById("plusOne").addEventListener("click", () => {
+      setTotal(total() + 1);
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      setTotal(0);
+    });
+
+    hideToggle.addEventListener("change", updateDisplay);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowUp" || event.key === "+") {
+        setTotal(total() + 1);
+      }
+
+      if (event.key === "ArrowDown" || event.key === "-") {
+        setTotal(total() - 1);
+      }
+
+      if (event.key === "0" || event.key === "Escape") {
+        setTotal(0);
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
