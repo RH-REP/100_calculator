@@ -41,6 +41,35 @@
       font: inherit;
     }
 
+    .page-jump {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      min-height: 42px;
+      border: 1px solid #b8c6cf;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      box-shadow: 0 10px 26px rgba(24, 33, 43, 0.12);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .page-jump:hover {
+      background: #ffffff;
+      border-color: #7d929e;
+    }
+
+    .page-jump:focus-visible {
+      outline: 3px solid rgba(42, 157, 143, 0.42);
+      outline-offset: 3px;
+    }
+
     .app {
       width: min(980px, 100%);
       min-height: 100vh;
@@ -410,6 +439,8 @@
 </head>
 <body>
   <main class="app">
+    <a class="page-jump" href="game.html">ゲーム</a>
+
     <section class="top-cell" aria-label="数字表示">
       <div class="number-cell">
         <output class="number" id="totalDisplay" aria-live="polite">0</output>
