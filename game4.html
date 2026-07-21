@@ -1560,7 +1560,7 @@
       .page-links {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
         max-width: none;
       }
 
@@ -1765,7 +1765,7 @@
       }
 
       .page-links {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
         gap: 5px;
       }
 
@@ -2643,9 +2643,6 @@
       <span class="phase-text" id="phaseText">準備完了</span>
       <nav class="page-links" aria-label="ページいどう">
         <a class="page-jump" href="index.html">けいさんき</a>
-        <a class="page-jump" href="game.html">ゲーム1</a>
-        <a class="page-jump" href="game2.html">ゲーム2</a>
-        <a class="page-jump" href="game3.html">ゲーム3</a>
       </nav>
     </footer>
   </main>
@@ -2662,6 +2659,8 @@
     const maxEndlessEnemies = 14;
     const shotTravelMs = 520;
     const shotIntervalMs = 78;
+    const floatingTextMs = 820;
+    const attackFormulaFloatingMs = floatingTextMs * 2;
     const meteorTravelMs = 620;
     const waveTransitionMs = 950;
     const enemyMoveSpeed = 4.4;
@@ -4276,15 +4275,16 @@
       }
     }
 
-    function addFloating(text, x, y, kind = "") {
+    function addFloating(text, x, y, kind = "", durationMs = floatingTextMs) {
+      const startAt = now();
       state.floating.push({
         id: state.nextFloatingId,
         text,
         x,
         y,
         kind,
-        startAt: now(),
-        endAt: now() + 820
+        startAt,
+        endAt: startAt + durationMs
       });
       state.nextFloatingId += 1;
     }
@@ -4549,7 +4549,8 @@
           options.text || (isBigEnemy(target) ? "大撃破" : `${target.value}=10`),
           target.x,
           lanes[target.laneIndex] - 15,
-          options.kind || "ok"
+          options.kind || "ok",
+          options.floatingDurationMs
         );
       }
 
@@ -4929,7 +4930,13 @@
 
       fillBigEnemySlot(target, slotIndex);
       playBigEnemyHitSound();
-      addFloating(`${targetValue}+${value}=10`, target.x, enemyFloatingY(target, slotIndex), "ok");
+      addFloating(
+        `${targetValue}+${value}=10`,
+        target.x,
+        enemyFloatingY(target, slotIndex),
+        "ok",
+        attackFormulaFloatingMs
+      );
 
       if (!isBigEnemyComplete(target)) {
         setFeedback(`大きな敵 ${slotIndex + 1}段目クリア。次は${currentEnemyValue(target)}`);
@@ -4982,7 +4989,8 @@
         text: `${targetValue}+${value}=10`,
         rewardCoin: true,
         useCombo: true,
-        removeDelay: options.removeDelay
+        removeDelay: options.removeDelay,
+        floatingDurationMs: attackFormulaFloatingMs
       });
 
       setFeedback(result.waveAdvanced ? `ウェーブ${state.wave}開始` : `${targetValue}と${value}で10`);
