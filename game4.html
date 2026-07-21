@@ -2043,40 +2043,141 @@
 
     @media (max-width: 370px) {
       :root {
-        --deploy-size: 40px;
+        --shell-gap: 4px;
+        --panel-pad: 4px;
+        --panel-gap: 4px;
+        --button-gap: 3px;
+        --deploy-size: 36px;
         --tool-width: 36px;
-        --number-row-height: 34px;
-        --special-row-height: 38px;
+        --number-row-height: 29px;
+        --special-row-height: 30px;
+      }
+
+      body {
+        padding: 3px;
+      }
+
+      .game-shell {
+        height: calc(100vh - 6px);
+        height: calc(100dvh - 6px);
       }
 
       .app-header {
-        padding: 7px 8px;
+        gap: 4px;
+        padding: 5px 6px;
       }
 
       .brand-mark {
-        width: 38px;
-        height: 38px;
+        display: none;
       }
 
       .brand-text h1 {
-        font-size: 1.24rem;
+        font-size: 1.12rem;
+        line-height: 1;
       }
 
       .badge {
-        min-height: 25px;
-        font-size: 0.66rem;
+        min-height: 22px;
+        padding: 2px 3px;
+        border-width: 2px;
+        font-size: 0.58rem;
       }
 
       .badge.version-badge {
-        font-size: 0.56rem;
+        min-height: 22px;
+        font-size: 0.5rem;
+      }
+
+      .page-links {
+        gap: 3px;
+      }
+
+      .page-jump {
+        min-height: 26px;
+        padding-inline: 2px;
+        font-size: 0.52rem;
+      }
+
+      .status-card {
+        min-height: 36px;
+        padding: 4px 6px;
+      }
+
+      .mission-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 8px;
+        align-items: center;
+      }
+
+      .mission-card .status-label {
+        margin: 0;
+        font-size: 0.58rem;
+        line-height: 1.05;
+        white-space: nowrap;
+      }
+
+      .mission-card .status-value {
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .mission-card .meter {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        height: 10px;
+        margin-top: 0;
       }
 
       .game-area {
-        grid-template-rows: minmax(190px, 1fr) auto;
+        grid-template-rows: minmax(210px, 1fr) auto;
+      }
+
+      .battle-shell {
+        padding: var(--panel-pad);
+      }
+
+      .number-panel {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto;
+        align-items: start;
+      }
+
+      .panel-actions {
+        width: auto;
+        grid-column: 1;
+        grid-row: 1;
+        grid-template-columns: 1fr;
+        grid-auto-rows: var(--tool-width);
+        align-self: start;
+      }
+
+      .deploy-button,
+      .panel-icon-button {
+        width: var(--tool-width);
+        min-height: var(--tool-width);
+        border-width: 2px;
+        box-shadow: 0 2px 0 var(--shadow);
+      }
+
+      .deploy-icon {
+        font-size: 1.6rem;
+      }
+
+      .pause-icon,
+      .reset-icon {
+        font-size: 1.35rem;
+      }
+
+      .number-grid {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: start;
       }
 
       .number-button {
-        grid-template-columns: 20px minmax(0, auto);
+        grid-template-columns: 18px minmax(0, auto);
         gap: 2px;
         padding-inline: 3px;
       }
@@ -2086,17 +2187,120 @@
       }
 
       .button-pattern {
-        --dot-size: 3.3px;
+        --dot-size: 2.9px;
         gap: 1px;
       }
 
+      .special-button {
+        grid-template-columns: 16px minmax(0, 1fr);
+        min-height: var(--special-row-height);
+        column-gap: 2px;
+        padding: 2px 3px;
+      }
+
+      .special-icon {
+        width: 16px;
+        height: 16px;
+      }
+
       .special-label {
-        font-size: 0.6rem;
+        font-size: 0.5rem;
       }
 
       .special-cost,
       .page-jump {
+        font-size: 0.48rem;
+      }
+
+      .control-bar {
+        padding: 4px;
+      }
+
+      .phase-text {
+        display: none;
+      }
+
+      .castle-health-hud {
+        top: 5px;
+        left: 5px;
+        width: 76px;
+        padding: 4px 5px 5px;
+      }
+
+      .castle-health-hud .status-label {
         font-size: 0.54rem;
+      }
+
+      .castle-health-hud .status-value {
+        font-size: 0.78rem;
+      }
+
+      .castle-health-hud .meter {
+        height: 9px;
+      }
+
+      .battlefield .coin-badge {
+        top: 5px;
+        right: 5px;
+      }
+
+      .target-hud {
+        top: 5px;
+        left: 50%;
+        width: min(126px, 40%);
+        min-height: 42px;
+        gap: 3px;
+        padding: 4px;
+      }
+
+      .target-hud-label {
+        font-size: 0.5rem;
+      }
+
+      .target-hud-number {
+        min-width: 22px;
+        min-height: 22px;
+        border-width: 2px;
+        font-size: 0.86rem;
+      }
+
+      .target-hud-pattern-shell {
+        min-width: 42px;
+      }
+
+      .target-pattern {
+        --dot-size: 3px;
+        gap: 1px;
+        padding: 2px;
+      }
+
+      .enemy {
+        width: 54px;
+        height: 68px;
+      }
+
+      .enemy.is-big {
+        width: 82px;
+        height: 112px;
+      }
+
+      .enemy.is-big .enemy-figure {
+        width: 72px;
+        height: 104px;
+      }
+
+      .enemy.is-big .enemy-creature {
+        width: 64px;
+        height: 78px;
+      }
+
+      .soldier {
+        transform: translateX(-50%) scale(0.68);
+      }
+
+      .castle-gate {
+        width: min(48px, 62%);
+        height: 74px;
       }
     }
 
