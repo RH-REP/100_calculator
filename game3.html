@@ -1251,7 +1251,7 @@
   </style>
 </head>
 <body>
-  <main class="prototype">
+  <main class="prototype" data-screen="game3.main">
     <input checked type="radio" name="screen" id="tab-title">
     <input type="radio" name="screen" id="tab-village">
     <input type="radio" name="screen" id="tab-mission">
@@ -1289,7 +1289,7 @@
     </nav>
 
     <section class="viewport">
-      <article class="screen screen-title">
+      <article class="screen screen-title" data-screen="game3.title">
         <div class="title-scene">
           <div class="title-copy">
             <span class="mini-label cool">野営地から石の村へ</span>
@@ -1315,7 +1315,7 @@
         </div>
       </article>
 
-      <article class="screen screen-village">
+      <article class="screen screen-village" data-screen="game3.village">
         <div class="screen-grid village-layout">
           <div class="resource-bar" aria-label="在庫">
             <div class="resource-card">
@@ -1361,7 +1361,7 @@
         </div>
       </article>
 
-      <article class="screen screen-mission">
+      <article class="screen screen-mission" data-screen="game3.mission">
         <div class="screen-grid two-col">
           <section class="panel">
             <div class="panel-title">
@@ -1402,7 +1402,7 @@
         </div>
       </article>
 
-      <article class="screen screen-explore">
+      <article class="screen screen-explore" data-screen="game3.explore">
         <div class="screen-grid three-col">
           <section class="panel">
             <div class="panel-title">
@@ -1464,7 +1464,7 @@
         </div>
       </article>
 
-      <article class="screen screen-pack">
+      <article class="screen screen-pack" data-screen="game3.pack">
         <div class="screen-grid">
           <section class="panel">
             <div class="panel-title">
@@ -1510,7 +1510,7 @@
         </div>
       </article>
 
-      <article class="screen screen-build">
+      <article class="screen screen-build" data-screen="game3.build">
         <div class="screen-grid two-col">
           <section class="panel">
             <div class="panel-title">
@@ -1565,7 +1565,7 @@
         </div>
       </article>
 
-      <article class="screen screen-craft">
+      <article class="screen screen-craft" data-screen="game3.craft">
         <div class="screen-grid two-col">
           <section class="panel">
             <div class="panel-title">
@@ -1615,7 +1615,7 @@
         </div>
       </article>
 
-      <article class="screen screen-battle">
+      <article class="screen screen-battle" data-screen="game3.battle">
         <div class="battlefield">
           <div class="battle-status">
             <section class="panel">
@@ -1653,7 +1653,7 @@
         </div>
       </article>
 
-      <article class="screen screen-result">
+      <article class="screen screen-result" data-screen="game3.result">
         <div class="screen-grid result-layout">
           <section class="panel">
             <div class="panel-title">
@@ -1696,5 +1696,16 @@
       </article>
     </section>
   </main>
+  <script src="assets/feedback.js"></script>
+  <script>
+    AppFeedback.install({
+      app: "100_balls_calculator",
+      version: "2026-10-22",
+      repo: "RH-REP/100_calculator",
+      screenshot: "off",
+      isPublic: true,
+      getContext: () => ({ summary: `ゲーム3・タブ ${document.querySelector(".screen-tabs label[for=" + document.querySelector("input[name=screen]:checked").id + "]").textContent}` })
+    });
+  </script>
 </body>
 </html>

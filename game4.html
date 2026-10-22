@@ -2527,7 +2527,7 @@
   </style>
 </head>
 <body>
-  <main class="game-shell" aria-labelledby="gameTitle">
+  <main class="game-shell" aria-labelledby="gameTitle" data-screen="game4.main">
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
       <!-- Character and weapon icons adapted from Tabler Icons (MIT License): https://github.com/tabler/tabler-icons -->
       <symbol id="icon-human-run" viewBox="0 0 24 24">
@@ -5703,6 +5703,17 @@
 
     buildButtons();
     resetGame();
+  </script>
+  <script src="assets/feedback.js"></script>
+  <script>
+    AppFeedback.install({
+      app: "100_balls_calculator",
+      version: "2026-10-22",
+      repo: "RH-REP/100_calculator",
+      screenshot: "off",
+      isPublic: true,
+      getContext: () => ({ summary: `ゲーム4・第${state.wave}ウェーブ・${state.message}・スコア ${state.score}` })
+    });
   </script>
 </body>
 </html>

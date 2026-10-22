@@ -44,7 +44,7 @@
     .page-links {
       position: fixed;
       top: 16px;
-      right: 16px;
+      right: 46px;                /* 右上の「!」（改善のコメント）と重ならないように */
       z-index: 20;
       display: inline-flex;
       justify-content: flex-end;
@@ -786,7 +786,7 @@
   </style>
 </head>
 <body>
-  <main class="game-shell" aria-labelledby="gameTitle">
+  <main class="game-shell" aria-labelledby="gameTitle" data-screen="game.main">
     <nav class="page-links" aria-label="ページいどう">
       <a class="page-jump" href="index.html">けいさんき</a>
       <a class="page-jump" href="game2.html">ゲーム2</a>
@@ -946,5 +946,16 @@
       </div>
     </footer>
   </main>
+  <script src="assets/feedback.js"></script>
+  <script>
+    AppFeedback.install({
+      app: "100_balls_calculator",
+      version: "2026-10-22",
+      repo: "RH-REP/100_calculator",
+      screenshot: "off",
+      isPublic: true,
+      getContext: () => ({ summary: `ゲーム1・${document.querySelector(".stage-kicker").textContent} ${document.getElementById("gameTitle").textContent}` })
+    });
+  </script>
 </body>
 </html>
